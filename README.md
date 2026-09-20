@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="data/vban-audio.png" width="120" alt="VBAN Audio waveform and return loop">
+  <img src="docs/images/social-preview.jpg" width="100%" alt="OBS VBAN Audio: 8 inputs and 2 monitor returns for OBS Studio on Windows x64">
 </p>
 
 # OBS VBAN Audio
