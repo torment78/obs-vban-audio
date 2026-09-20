@@ -1,0 +1,204 @@
+VBAN Audio 0.2.2 - Installation and usage
+
+CHOOSE THE RIGHT ZIP
+
+The plugin works with normal and portable OBS Studio on Windows x64.
+Both ZIP files contain the same plugin DLL, arranged for different install paths.
+Install only one copy.
+
+- obs-vban-audio-0.2.2-obs-root.zip:
+  Merge into the OBS installation folder. Works with normal AND portable OBS.
+
+- obs-vban-audio-0.2.2-windows-x64.zip:
+  Copy the obs-vban-audio folder into C:\ProgramData\obs-studio\plugins
+  for a normal OBS installation.
+
+INSTALL THE OBS-ROOT ZIP
+
+1. Close OBS completely.
+2. Open the OBS installation folder, normally:
+   C:\Program Files\obs-studio
+
+   For portable OBS, open its own folder instead. The root folder contains
+   bin, data, and obs-plugins.
+
+3. Extract the OBS-root ZIP. Copy its obs-plugins and data folders into the
+   OBS folder. Merge the folders and accept the administrator prompt if needed.
+
+   The resulting files include:
+   <OBS folder>\obs-plugins\64bit\obs-vban-audio.dll
+   <OBS folder>\data\obs-plugins\obs-vban-audio\locale\en-US.ini
+   <OBS folder>\data\obs-plugins\obs-vban-audio\vban-audio.png
+
+   Do not put the whole extracted package inside obs-plugins or bin.
+
+4. Start OBS and open Tools > VBAN Audio Settings.
+
+INSTALL THE WINDOWS-X64 ZIP
+
+1. Close OBS completely.
+2. Extract the windows-x64 ZIP.
+3. Copy its obs-vban-audio folder into:
+   C:\ProgramData\obs-studio\plugins
+
+   The resulting files include:
+   C:\ProgramData\obs-studio\plugins\obs-vban-audio\bin\64bit\obs-vban-audio.dll
+   C:\ProgramData\obs-studio\plugins\obs-vban-audio\data\locale\en-US.ini
+   C:\ProgramData\obs-studio\plugins\obs-vban-audio\data\vban-audio.png
+
+4. Start OBS and open Tools > VBAN Audio Settings.
+
+For portable OBS, use the OBS-root ZIP instead.
+
+UPDATING OR UNINSTALLING
+
+Close OBS before replacing files. Use the same installation layout as before.
+Keep only one installed copy. Existing stream selections and settings are retained.
+
+To uninstall, close OBS and remove this plugin's DLL and data folder, or its
+ProgramData plugin folder, depending on the layout used.
+
+REQUIREMENTS
+
+Windows x64, OBS Studio x64, and the Microsoft Visual C++ x64 runtime.
+Tested with OBS 31.1.1 and OBS 32.2.1. The downloads are unsigned.
+Use OBS's own libobs, frontend API and Qt DLLs; do not copy development SDK
+libraries into an OBS installation.
+
+RECEIVE AUDIO IN OBS
+
+1. Open Tools > VBAN Audio Settings.
+2. Enter the computer SENDING audio to OBS in Common sender IPv4.
+   Turn off common-IP mode to use a separate sender address for each slot.
+3. Set UDP listen port. The default is 6980.
+4. Enable the slots you need.
+5. Enter each VBAN stream name exactly as it appears on the sender.
+   Names are case-sensitive, with 1 to 16 printable ASCII characters.
+6. Enter an optional Friendly name, such as Microphone or Game Audio.
+7. Click Apply.
+8. On the sender, configure VBAN output to this OBS computer's IPv4 address
+   and the same UDP port.
+9. In an OBS scene, choose Sources > + > VBAN Audio.
+10. Select the configured stream from VBAN Stream.
+
+The source appears in the OBS Audio Mixer. Automatically named sources use
+the slot's Friendly name. Names you assign yourself are preserved.
+Use normal OBS faders, mute, filters, monitoring and track controls.
+Multiple OBS sources can select the same slot.
+
+Configure a sender/stream-name pair only once in the global slots.
+Other enabled slots need different sender/name combinations.
+
+RECEIVE STATUS
+
+Receiving: matching valid packets arrived recently.
+Waiting: no recent matching valid packets.
+Error: invalid/unsupported audio or a receiver/socket error.
+Disabled: the slot is disabled.
+
+Hover over status in the settings window for details. In source Properties,
+use Refresh status to update counters. The stream dropdown is not rebuilt
+periodically while you are selecting a stream.
+
+SEND THE OBS MONITOR MIX BACK
+
+1. Open Tools > VBAN Audio Settings > VBAN RETURNS.
+2. In Send from this PC, select this OBS computer's LAN address and adapter.
+   Select the address belonging to the computer, not its gateway/router.
+   Automatic lets Windows choose the route.
+3. Enable Return 1 and/or Return 2.
+4. Set Destination IPv4 to the computer RECEIVING that return.
+5. Set UDP port to the receiving computer's VBAN input port.
+6. Choose a VBAN stream name, such as OBSRETURN1 or OBSRETURN2.
+7. Leave Return audio buffer at 60 ms initially.
+8. Click Apply.
+9. In OBS Advanced Audio Properties, set each desired source to Monitor Only
+   or Monitor and Output. Monitor Off removes it from the return.
+10. In VoiceMeeter's incoming VBAN settings, enable the stream and match
+    its name, receiving port and sender IP (the OBS computer's address).
+    Route the incoming stream to the desired VoiceMeeter output.
+
+Both returns contain the same stereo PCM24 monitoring mix at the OBS sample
+rate. Source filters and fader gains are included. Destinations and packet
+counters are independent. Each enabled return sends silence if there is no
+monitored audio.
+
+In Windows OBS 32.2.1, program mute does not mute headphone monitoring.
+Use Monitor Off to exclude a source from the return. Tested OBS 31.1.1
+monitoring honors the mute flag.
+
+Sending means Windows accepted outgoing packets. It does not confirm reception.
+The actual local source and destination addresses are displayed beside each
+return. These are the socket addresses before any router/NAT translation.
+An unavailable selected adapter produces an error without silently changing it.
+Reopen settings to refresh the adapter list.
+
+Never feed a received OBS return into a VBAN stream that comes back into OBS.
+That creates an audio feedback loop.
+
+RETURN AUDIO BUFFER AND DIAGNOSTICS
+
+Return audio buffer is adjustable from 20 to 200 ms, default 60 ms.
+This gives source audio time to reach the mixer before transmission.
+Increasing it adds monitor delay. Try 100 ms if Late audio frames keeps
+increasing during steady playback.
+
+Negative audio/video sync offsets add shared waiting time to preserve relative
+alignment. OBS monitoring sync behavior differs for video and audio-only sources.
+The final physical headphone-device buffer is separate from this network return.
+
+Hover over return status for:
+- Capture queue overflows: the worker could not keep up with captured audio.
+- Queue peak: busiest source's peak occupancy out of 128 capture blocks.
+- Late audio frames: source data missed the return mixing deadline.
+- Clock corrections: normal small source-clock adjustments.
+- Clock discontinuities: source timestamps jumped or restarted.
+- Clipped samples: the combined mix exceeded full scale. Lower source faders.
+- Invalid float samples: a source or filter supplied invalid audio.
+- Socket errors: Windows rejected an outgoing UDP packet.
+- Send gaps: the local transmitter paused for more than 20 ms.
+- Windows audio priority: whether multimedia scheduling is available.
+
+Compare counter changes during steady playback, after startup or settings edits.
+Audio counters follow current source lifetimes. Return Apply resets send and
+clipping counters. No local counter proves remote packet delivery.
+
+VoiceMeeter's incoming VBAN network buffer is configured separately on the
+receiving computer. If local counters stay steady but VoiceMeeter reports
+reception errors, check its VBAN network-quality setting and the network path.
+An upstream input stream can also contain gaps or clicks before the return mix.
+
+TROUBLESHOOTING
+
+If the plugin is missing, check the exact DLL path, x64 architecture and the
+OBS startup log for obs-vban-audio. Restart OBS after installing it.
+
+If a stream remains Waiting, check sender IP, stream name, destination IP,
+UDP port, enabled VBAN output and inbound Windows Firewall permissions.
+Another receiver may already own the chosen listen port.
+
+For LAN returns, select the physical LAN adapter if VPN routing selects an
+unexpected path. The plugin does not change firewall, router or VPN settings.
+
+If audio clips, lower the contributing source faders. Their sum can exceed
+full scale even when each individual source is below it.
+
+Missing input packets cannot be recreated by increasing the return buffer.
+Check both the OBS receive counters and VoiceMeeter's return-reception indicators.
+
+Settings are saved in settings.json in the OBS module configuration folder.
+Source stream selections are saved by OBS with the scene collection.
+
+SUPPORT AND OPTIONAL DONATIONS
+
+Project and downloads:
+https://github.com/torment78/obs-vban-audio
+
+Bug reports:
+https://github.com/torment78/obs-vban-audio/issues
+
+Donate on Ko-fi:
+https://ko-fi.com/msffixit
+
+The Donate on Ko-fi button in VBAN Audio Settings opens the same page.
+The plugin is free; donations are optional.

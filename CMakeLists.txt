@@ -1,39 +1,72 @@
-cmake_minimum_required(VERSION 3.28...3.30)
-
+cmake_minimum_required(VERSION 3.28...4.3)
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
-
 project(${_name} VERSION ${_version})
-
-option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" OFF)
-option(ENABLE_QT "Use Qt functionality" OFF)
-
+option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" ON)
+option(ENABLE_QT "Use Qt functionality" ON)
 include(compilerconfig)
+if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  message(FATAL_ERROR "obs-vban-audio currently supports Windows x64")
+endif()
 include(defaults)
 include(helpers)
 
-add_library(${CMAKE_PROJECT_NAME} MODULE)
-
+add_library(vban-core STATIC src/vban-protocol.cpp src/stream-buffer.cpp src/receiver.cpp src/vban-transmitter.cpp)
+target_include_directories(vban-core PUBLIC src)
+target_compile_definitions(vban-core PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+target_link_libraries(vban-core PUBLIC ws2_32 iphlpapi)
+add_library(${CMAKE_PROJECT_NAME} MODULE src/plugin-main.cpp src/settings.cpp src/monitor-return.cpp)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE QT_NO_KEYWORDS)
 find_package(libobs REQUIRED)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
-
-if(ENABLE_FRONTEND_API)
-  find_package(obs-frontend-api REQUIRED)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::obs-frontend-api)
-endif()
-
-if(ENABLE_QT)
-  find_package(Qt6 COMPONENTS Widgets Core)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt6::Core Qt6::Widgets)
-  target_compile_options(
-    ${CMAKE_PROJECT_NAME}
-    PRIVATE $<$<C_COMPILER_ID:Clang,AppleClang>:-Wno-quoted-include-in-framework-header -Wno-comma>
-  )
-  set_target_properties(
-    ${CMAKE_PROJECT_NAME}
-    PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON
-  )
-endif()
-
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/plugin-main.c)
-
+find_package(obs-frontend-api REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+  vban-core OBS::libobs OBS::obs-frontend-api Qt6::Core Qt6::Widgets avrt)
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(vban-tests tests/vban-tests.cpp)
+  target_link_libraries(vban-tests PRIVATE vban-core)
+  add_test(NAME vban-core COMMAND vban-tests)
+endif()
+
+if(BUILD_TESTING)
+  add_executable(obs-smoke tests/obs-smoke.cpp)
+  target_compile_definitions(obs-smoke PRIVATE QT_NO_KEYWORDS WIN32_LEAN_AND_MEAN NOMINMAX)
+  target_include_directories(obs-smoke PRIVATE .deps/obs-studio-31.1.1/frontend/api)
+  target_link_libraries(obs-smoke PRIVATE OBS::libobs OBS::obs-frontend-api Qt6::Core Qt6::Widgets ws2_32)
+  add_dependencies(obs-smoke ${CMAKE_PROJECT_NAME})
+  add_test(NAME obs-dll-smoke COMMAND obs-smoke
+    $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
+    "${CMAKE_SOURCE_DIR}/data" "${CMAKE_BINARY_DIR}/smoke-config")
+  set_tests_properties(obs-dll-smoke PROPERTIES TIMEOUT 30)
+endif()
+if(BUILD_TESTING)
+  add_executable(return-tests tests/return-tests.cpp)
+  target_link_libraries(return-tests PRIVATE vban-core)
+  add_test(NAME vban-returns COMMAND return-tests)
+  set_tests_properties(vban-returns PROPERTIES TIMEOUT 15)
+endif()
+
+
+if(BUILD_TESTING)
+  add_executable(obs-return-smoke tests/obs-return-smoke.cpp)
+  target_compile_definitions(obs-return-smoke PRIVATE QT_NO_KEYWORDS WIN32_LEAN_AND_MEAN NOMINMAX)
+  target_include_directories(obs-return-smoke PRIVATE .deps/obs-studio-31.1.1/frontend/api)
+  target_link_libraries(obs-return-smoke PRIVATE vban-core OBS::libobs OBS::obs-frontend-api Qt6::Core Qt6::Widgets ws2_32)
+  add_dependencies(obs-return-smoke ${CMAKE_PROJECT_NAME})
+  add_test(NAME obs-monitor-return COMMAND obs-return-smoke
+    $<TARGET_FILE:${CMAKE_PROJECT_NAME}> "${CMAKE_SOURCE_DIR}/data" "${CMAKE_BINARY_DIR}/return-smoke-config")
+  set_tests_properties(obs-monitor-return PROPERTIES TIMEOUT 45)
+endif()
+
+
+# Optional compatibility host: uses the official 32.2.1 frontend headers/runtime,
+# while the distributed plugin keeps the same SDK baseline as its working receiver.
+if(BUILD_TESTING AND EXISTS "${CMAKE_SOURCE_DIR}/.deps/obs-api-32.2.1/obs-frontend-internal.hpp")
+  add_executable(obs-return-smoke32 tests/obs-return-smoke.cpp)
+  target_compile_definitions(obs-return-smoke32 PRIVATE TEST_OBS32 QT_NO_KEYWORDS WIN32_LEAN_AND_MEAN NOMINMAX)
+  target_include_directories(obs-return-smoke32 BEFORE PRIVATE .deps/obs-frontend32)
+  target_link_libraries(obs-return-smoke32 PRIVATE vban-core OBS::libobs OBS::obs-frontend-api Qt6::Core Qt6::Widgets ws2_32)
+  add_dependencies(obs-return-smoke32 ${CMAKE_PROJECT_NAME})
+endif()
