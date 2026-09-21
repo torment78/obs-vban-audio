@@ -1,6 +1,35 @@
 VBAN Audio 0.2.2 - Installation and usage
 
-CHOOSE THE RIGHT ZIP
+INSTALLER (STANDARD OR PORTABLE OBS)
+
+1. Close all OBS Studio windows.
+2. Run obs-vban-audio-0.2.2-windows-x64-setup.exe.
+   Approve the Windows administrator prompt. Protected folders such as
+   Program Files need administrator access.
+3. Select one option:
+   - Standard OBS installation (default): check the detected OBS folder.
+     Use Browse if OBS is installed somewhere else.
+   - Portable OBS: click Browse and select your portable OBS root folder.
+4. Select the folder containing bin, data, and obs-plugins.
+   Examples: C:\Program Files\obs-studio or D:\OBS-Portable.
+   Do not select bin, 64bit, or obs-plugins themselves.
+5. Click Next, review the destination paths, then click Install.
+6. Start OBS and open Tools > VBAN Audio Settings.
+
+Both options place the plugin DLL in:
+<OBS folder>\obs-plugins\64bit\obs-vban-audio.dll
+The data, usage guide and uninstaller go in:
+<OBS folder>\data\obs-plugins\obs-vban-audio
+
+The installer requires an existing 64-bit OBS installation. It does not install
+OBS or turn portable mode on. Start portable OBS with its usual shortcut or
+portable launch option.
+
+If you previously used the root ZIP, select the same OBS folder to update it.
+If you used the ProgramData ZIP, first remove that plugin copy to avoid loading
+two copies. Standard mode checks the usual ProgramData plugin location.
+
+CHOOSING A MANUAL ZIP
 
 The plugin works with normal and portable OBS Studio on Windows x64.
 Both ZIP files contain the same plugin DLL, arranged for different install paths.
@@ -55,7 +84,13 @@ UPDATING OR UNINSTALLING
 Close OBS before replacing files. Use the same installation layout as before.
 Keep only one installed copy. Existing stream selections and settings are retained.
 
-To uninstall, close OBS and remove this plugin's DLL and data folder, or its
+Installer users: close OBS, then use Windows Settings > Apps > Installed apps >
+OBS VBAN Audio for a standard installation. For portable OBS, run unins000.exe
+inside <OBS folder>\data\obs-plugins\obs-vban-audio. The uninstaller removes only
+its installed files and preserves OBS settings and unrelated files. If you move
+the OBS folder, run the installer again for the new location before uninstalling.
+
+Manual ZIP users: close OBS and remove this plugin's DLL and data folder, or its
 ProgramData plugin folder, depending on the layout used.
 
 REQUIREMENTS

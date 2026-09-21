@@ -2,6 +2,8 @@
 
 ## 0.2.2
 
+- Add an EXE installer with standard/portable choices, OBS folder validation and scoped uninstall support (same plugin DLL).
+
 - Fix return audio gaps/overlaps caused by gradual source-clock drift.
 - Add a 20–200 ms return buffer, defaulting to 60 ms.
 - Double per-source capture queue capacity and request Windows audio scheduling.

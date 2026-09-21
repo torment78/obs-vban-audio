@@ -21,10 +21,32 @@ Free and open source under GPL-2.0-or-later. Donations support development and a
 
 Version **0.2.2**. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
 
-| ZIP | Where it goes |
+| Download | Where it goes |
 | --- | --- |
+| **obs-vban-audio-0.2.2-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
 | **obs-vban-audio-0.2.2-obs-root.zip** | Merge its **obs-plugins** and **data** folders into the OBS installation folder. Works with **normal and portable OBS**. |
 | **obs-vban-audio-0.2.2-windows-x64.zip** | Copy its **obs-vban-audio** folder into **C:\ProgramData\obs-studio\plugins** for a normal OBS installation. |
+
+### Using the installer
+
+1. Close OBS, run **obs-vban-audio-0.2.2-windows-x64-setup.exe**, and approve the Windows administrator prompt.
+2. Choose **Standard OBS installation** (selected by default) or **Portable OBS**.
+3. Check the detected standard OBS folder, or click **Browse** to choose your portable
+   OBS root: the folder containing **bin**, **data**, and **obs-plugins**.
+4. Click **Next**, review the paths, then **Install**. Restart OBS and open
+   **Tools → VBAN Audio Settings**.
+
+Both installer modes put the DLL and data inside the selected OBS folder. Standard
+mode adds a Windows Installed apps entry; portable mode keeps its uninstaller in
+the plugin's data folder. The installer does not install OBS itself or enable
+OBS portable mode. Your existing scenes, profiles and VBAN settings are preserved.
+
+Already using the root ZIP? Select the same OBS folder to update it. If you used
+the ProgramData ZIP, remove that plugin copy before switching to the installer.
+Setup checks the usual ProgramData location in standard mode to prevent duplicate
+copies. Close all OBS instances before installing or uninstalling.
+
+### Manual ZIP installation
 
 Use **one** layout and keep only one installed copy. Close OBS before copying files.
 The root ZIP is the simplest option if you already install plugins by merging folders.
@@ -106,6 +128,7 @@ Hover over a return's status to see:
 
 | Counter | What it tells you |
 | --- | --- |
+| **obs-vban-audio-0.2.2-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
 | Capture queue overflows / queue peak | Source capture is outrunning the return worker. |
 | Late audio frames | Source audio arrived after its mixing deadline. |
 | Clock corrections | Small drift adjustments; increasing normally is expected. |
@@ -161,6 +184,16 @@ After initial configuration, open **build_x64\obs-vban-audio.slnx** in Visual St
 Alternatively open the repository as a CMake folder and choose **windows-x64**.
 
 Outputs are in **build_x64\RelWithDebInfo** and **dist**.
+
+To add the EXE installer, install [Inno Setup 6](https://jrsoftware.org/isinfo.php),
+then run the following after the Visual Studio build/package step:
+
+```powershell
+.\tools\package-installer.ps1
+```
+
+This packages the same DLL as the root ZIP and verifies it matches the Visual
+Studio build. See [installer build and testing notes](docs/INSTALLER.md).
 Tests use isolated OBS configurations and local UDP receivers. They do not play
 through physical speakers or change your normal OBS or VoiceMeeter setup.
 
