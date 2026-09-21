@@ -33,6 +33,7 @@ $payloadHash = (Get-FileHash -LiteralPath $payloadDll -Algorithm SHA256).Hash
 if ($payloadHash -ne (Get-FileHash -LiteralPath $builtDll -Algorithm SHA256).Hash) {
     throw 'The release ZIP DLL does not match the Visual Studio build. Do not publish mixed binaries.'
 }
+& (Join-Path $PSScriptRoot 'create-installer-icon.ps1')
 $script = Join-Path $repoRoot 'installer\obs-vban-audio.iss'
 $output = Join-Path $repoRoot 'dist'
 & $InnoCompiler "/DAppVersion=$version" "/DPayloadDir=$stage" "/DOutputPath=$output" $script

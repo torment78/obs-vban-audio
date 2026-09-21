@@ -17,6 +17,10 @@ It extracts an explicit list of payload files from the root ZIP and checks the
 DLL SHA256 against the Visual Studio build before compiling the installer.
 Use `-InnoCompiler` for a non-default compiler path.
 
+Packaging also converts the existing plugin PNG into a multi-resolution Windows
+ICO and embeds it in Setup/Uninstall. The Installed apps entry uses the uninstaller's
+matching icon. All seven ICO frame payloads were verified in the compiled setup EXE.
+
 Output: `dist\obs-vban-audio-0.2.2-windows-x64-setup.exe`.
 
 ## Installation behavior

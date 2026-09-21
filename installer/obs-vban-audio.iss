@@ -28,6 +28,7 @@ OutputDir={#OutputPath}
 OutputBaseFilename=obs-vban-audio-{#AppVersion}-windows-x64-setup
 Compression=lzma2
 SolidCompression=yes
+SetupIconFile=vban-audio.ico
 WizardStyle=modern
 WizardSizePercent=110
 ArchitecturesAllowed=x64compatible
@@ -44,7 +45,7 @@ Uninstallable=yes
 UninstallFilesDir={app}\data\obs-plugins\obs-vban-audio
 CreateUninstallRegKey=IsStandard
 UninstallDisplayName=OBS VBAN Audio {#AppVersion}
-UninstallDisplayIcon={app}\bin\64bit\obs64.exe
+UninstallDisplayIcon={uninstallexe}
 ; A reinstall after moving portable OBS must record only the current root.
 UninstallLogMode=overwrite
 DirExistsWarning=no
