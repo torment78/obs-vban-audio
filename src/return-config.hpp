@@ -12,6 +12,7 @@ struct ReturnConfig {
     std::string destination_ip;
     uint16_t destination_port = 6980;
     std::string stream_name;
+    int pcm_bits = 24; // Keep the original return format when loading older settings.
 };
 using ReturnConfigs = std::array<ReturnConfig, return_count>;
 inline ReturnConfigs default_returns() {

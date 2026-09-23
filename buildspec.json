@@ -38,7 +38,7 @@
   },
   "name": "obs-vban-audio",
   "displayName": "VBAN Audio",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "OBS VBAN Audio contributors",
   "website": "https://github.com/torment78/obs-vban-audio",
   "email": ""

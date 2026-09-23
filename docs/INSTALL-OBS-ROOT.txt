@@ -1,9 +1,9 @@
-VBAN Audio 0.2.2 - Installation and usage
+VBAN Audio 0.2.3 - Installation and usage
 
 INSTALLER (STANDARD OR PORTABLE OBS)
 
 1. Close all OBS Studio windows.
-2. Run obs-vban-audio-0.2.2-windows-x64-setup.exe.
+2. Run obs-vban-audio-0.2.3-windows-x64-setup.exe.
    Approve the Windows administrator prompt. Protected folders such as
    Program Files need administrator access.
 3. Select one option:
@@ -35,10 +35,10 @@ The plugin works with normal and portable OBS Studio on Windows x64.
 Both ZIP files contain the same plugin DLL, arranged for different install paths.
 Install only one copy.
 
-- obs-vban-audio-0.2.2-obs-root.zip:
+- obs-vban-audio-0.2.3-obs-root.zip:
   Merge into the OBS installation folder. Works with normal AND portable OBS.
 
-- obs-vban-audio-0.2.2-windows-x64.zip:
+- obs-vban-audio-0.2.3-windows-x64.zip:
   Copy the obs-vban-audio folder into C:\ProgramData\obs-studio\plugins
   for a normal OBS installation.
 
@@ -142,20 +142,23 @@ SEND THE OBS MONITOR MIX BACK
    Select the address belonging to the computer, not its gateway/router.
    Automatic lets Windows choose the route.
 3. Enable Return 1 and/or Return 2.
-4. Set Destination IPv4 to the computer RECEIVING that return.
-5. Set UDP port to the receiving computer's VBAN input port.
-6. Choose a VBAN stream name, such as OBSRETURN1 or OBSRETURN2.
-7. Leave Return audio buffer at 60 ms initially.
-8. Click Apply.
-9. In OBS Advanced Audio Properties, set each desired source to Monitor Only
-   or Monitor and Output. Monitor Off removes it from the return.
-10. In VoiceMeeter's incoming VBAN settings, enable the stream and match
+4. Choose PCM 16-bit or PCM 24-bit in the PCM format dropdown for each return.
+   The choice is independent for each destination. Existing settings keep 24-bit.
+5. Set Destination IPv4 to the computer RECEIVING that return.
+6. Set UDP port to the receiving computer's VBAN input port.
+7. Choose a VBAN stream name, such as OBSRETURN1 or OBSRETURN2.
+8. Leave Return audio buffer at 60 ms initially.
+9. Click Apply to save and use the selected formats.
+10. In OBS Advanced Audio Properties, set each desired source to Monitor Only
+    or Monitor and Output. Monitor Off removes it from the return.
+11. In VoiceMeeter's incoming VBAN settings, enable the stream and match
     its name, receiving port and sender IP (the OBS computer's address).
     Route the incoming stream to the desired VoiceMeeter output.
 
-Both returns contain the same stereo PCM24 monitoring mix at the OBS sample
-rate. Source filters and fader gains are included. Destinations and packet
-counters are independent. Each enabled return sends silence if there is no
+Both returns contain the same stereo monitoring mix in their selected PCM format.
+The sample rate still follows OBS: keep OBS at 48 kHz for 48 kHz returns. Choosing
+16-bit or 24-bit does not change it. Source filters and fader gains are included.
+Destinations and packet counters are independent. Each enabled return sends silence if there is no
 monitored audio.
 
 In Windows OBS 32.2.1, program mute does not mute headphone monitoring.

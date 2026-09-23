@@ -53,7 +53,7 @@ struct Sink {
             char ip[INET_ADDRSTRLEN]{};InetNtopA(AF_INET,&peer.sin_addr,ip,sizeof(ip));last_peer=ip;
             vban::Packet packet;
             check(vban::decode(bytes.data(),got,packet)==vban::ParseError::none,"Actual return is valid VBAN");
-            check(packet.format.rate==48000 && packet.format.channels==2 && packet.format.type==2,"Stereo PCM24 at OBS rate");
+            check(packet.format.rate==48000 && packet.format.channels==2 && (packet.format.type==1 || packet.format.type==2),"Stereo PCM16/24 at unchanged 48 kHz");
             packets.push_back(std::move(packet));
         }
     }
@@ -91,8 +91,9 @@ int main(int argc,char **argv){
     QDir().mkpath(root+"/obs-vban-audio");
     QFile config(root+"/obs-vban-audio/settings.json");
     check(config.open(QIODevice::WriteOnly),"Isolated settings file");
-    // Old configuration: no returns key. Upgrade must preserve inputs and default TX off.
+    // Saved PCM16 is restored; an older return without pcm_bits keeps PCM24. Both start disabled.
     config.write(QJsonDocument(QJsonObject{{"version",1},{"common_ip",true},{"sender_ip","127.0.0.1"},
+        {"returns",QJsonArray{QJsonObject{{"enabled",false},{"pcm_bits",16}},QJsonObject{{"enabled",false}}}},
         {"port",6980},{"slots",QJsonArray{QJsonObject{{"enabled",false},{"label","Existing input"},{"stream_name","KEEP"}}}}}).toJson());
     config.close();
     check(obs_startup("en-US",root.toUtf8().constData(),nullptr),"OBS startup");
@@ -130,6 +131,19 @@ int main(int argc,char **argv){
     check(!dialog->findChild<QCheckBox*>("return_0_enabled")->isChecked() &&
           dialog->findChild<QLineEdit*>("return_0_name")->text()=="OBSRETURN1","Upgrade defaults both returns off");
     check(dialog->findChild<QLineEdit*>("stream_0")->text()=="KEEP","Upgrade preserves original input");
+    auto *pcm0=dialog->findChild<QComboBox*>("return_0_pcm_bits");
+    auto *pcm1=dialog->findChild<QComboBox*>("return_1_pcm_bits");
+    check(pcm0 && pcm1 && pcm0->count()==2 && pcm1->count()==2,"Both PCM selectors offer two formats");
+    check(pcm0->currentData().toInt()==16 && pcm1->currentData().toInt()==24,
+          "Saved PCM16 reloads and older return settings default to PCM24");
+    check(pcm0->mapTo(dialog,QPoint()).x()>dialog->findChild<QCheckBox*>("return_0_enabled")->mapTo(dialog,QPoint()).x() &&
+          pcm0->mapTo(dialog,QPoint()).x()<dialog->findChild<QLineEdit*>("return_0_ip")->mapTo(dialog,QPoint()).x(),
+          "PCM selector is between Enabled and destination IP");
+    pcm0->showPopup();
+    for(int i=0;i<7;++i){app.processEvents();std::this_thread::sleep_for(std::chrono::milliseconds(100));}
+    check(pcm0->view()->isVisible(),"Status refresh keeps the PCM dropdown open");
+    pcm0->hidePopup();
+    pcm0->setCurrentIndex(pcm0->findData(24));
     auto *buffer=dialog->findChild<QSpinBox*>("return_buffer_ms");
     check(buffer && buffer->value()==60,"Older settings get a 60 ms return buffer");
     auto *local=dialog->findChild<QComboBox*>("return_local_ip");
@@ -177,6 +191,27 @@ int main(int argc,char **argv){
         check(p.name=="MONITOR-A" && q.name=="MONITOR-B" && p.samples==q.samples,"Same mixed PCM in both returns");++same;break;
     }
     check(same>20,"Compared simultaneous return payloads");
+    for(const auto depths : {std::array<int,2>{16,24}, {24,16}, {16,16}, {24,24}, {16,24}}) {
+        pcm0->setCurrentIndex(pcm0->findData(depths[0]));
+        pcm1->setCurrentIndex(pcm1->findData(depths[1]));
+        buttons->button(QDialogButtonBox::Apply)->click();
+        run(300);expect(.1,"Switching PCM format keeps the existing monitored audio level");
+        check(left.packets.size()>25 && right.packets.size()>25,"Both formats keep sending after Apply");
+        for(size_t i=left.packets.size()-25;i<left.packets.size();++i)
+            check(left.packets[i].format.type==(depths[0]==16?1:2),"Return 1 sends the selected PCM format");
+        for(size_t i=right.packets.size()-25;i<right.packets.size();++i)
+            check(right.packets[i].format.type==(depths[1]==16?1:2),"Return 2 sends the selected PCM format");
+        check(config.open(QIODevice::ReadOnly),"Read saved PCM choices");
+        saved=QJsonDocument::fromJson(config.readAll()).object();config.close();
+        check(saved.value("returns").toArray()[0].toObject().value("pcm_bits").toInt()==depths[0] &&
+              saved.value("returns").toArray()[1].toObject().value("pcm_bits").toInt()==depths[1],
+              "Independent PCM choices persist");
+    }
+    pcm0->setCurrentIndex(-1);buttons->button(QDialogButtonBox::Apply)->click();
+    run(200);expect(.1,"Rejected format preserves the live return audio");
+    check(left.packets.back().format.type==1 && right.packets.back().format.type==2,
+          "Invalid format cannot replace a working PCM configuration");
+    pcm0->setCurrentIndex(pcm0->findData(16));
     local->addItem("Unavailable test address","192.0.2.123");
     local->setCurrentIndex(local->count()-1);
     buttons->button(QDialogButtonBox::Apply)->click();

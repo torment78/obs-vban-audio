@@ -19,17 +19,17 @@ Free and open source under GPL-2.0-or-later. Donations support development and a
 
 ## Download and install
 
-Version **0.2.2**. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
+Version **0.2.3**. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
 
 | Download | Where it goes |
 | --- | --- |
-| **obs-vban-audio-0.2.2-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
-| **obs-vban-audio-0.2.2-obs-root.zip** | Merge its **obs-plugins** and **data** folders into the OBS installation folder. Works with **normal and portable OBS**. |
-| **obs-vban-audio-0.2.2-windows-x64.zip** | Copy its **obs-vban-audio** folder into **C:\ProgramData\obs-studio\plugins** for a normal OBS installation. |
+| **obs-vban-audio-0.2.3-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
+| **obs-vban-audio-0.2.3-obs-root.zip** | Merge its **obs-plugins** and **data** folders into the OBS installation folder. Works with **normal and portable OBS**. |
+| **obs-vban-audio-0.2.3-windows-x64.zip** | Copy its **obs-vban-audio** folder into **C:\ProgramData\obs-studio\plugins** for a normal OBS installation. |
 
 ### Using the installer
 
-1. Close OBS, run **obs-vban-audio-0.2.2-windows-x64-setup.exe**, and approve the Windows administrator prompt.
+1. Close OBS, run **obs-vban-audio-0.2.3-windows-x64-setup.exe**, and approve the Windows administrator prompt.
 2. Choose **Standard OBS installation** (selected by default) or **Portable OBS**.
 3. Check the detected standard OBS folder, or click **Browse** to choose your portable
    OBS root: the folder containing **bin**, **data**, and **obs-plugins**.
@@ -89,16 +89,19 @@ printable ASCII characters. The stream dropdown stays open while you select it.
 1. Open **VBAN RETURNS** in the same settings window.
 2. Under **Send from this PC**, select this OBS computer's LAN address and adapter.
    **Automatic** lets Windows select the route.
-3. Enable Return 1 and/or Return 2. Enter the receiving computer's IPv4 address,
-   its incoming VBAN port, and a stream name.
+3. Enable Return 1 and/or Return 2. Choose **PCM 16-bit** or **PCM 24-bit** for each
+   return, then enter its destination IPv4 address, incoming VBAN port, and stream name.
 4. Leave **Return audio buffer** at **60 ms** initially, then click **Apply**.
 5. In OBS **Advanced Audio Properties**, use **Monitor Only** or **Monitor and Output**
    for sources you want in the return. **Monitor Off** excludes a source.
 6. In VoiceMeeter, enable an incoming VBAN stream with the matching name, port,
    and sender IP (the OBS computer).
 
-Both returns carry the same stereo PCM24 mix at the OBS sample rate, including
-source filters and fader gains. Each has an independent socket and packet counter.
+Both returns carry the same stereo monitor mix, including source filters and fader
+gains, encoded at their independently selected PCM bit depths. Existing settings
+retain **PCM 24-bit**. Changing bit depth does not change the sample rate: with OBS
+set to **48 kHz**, both returns remain at **48 kHz**. Each has an independent socket
+and packet counter.
 
 In tested Windows OBS 32.2.1, the normal program mute button does not mute headphone
 monitoring, and the return follows that behavior. Use **Monitor Off** to remove
@@ -128,7 +131,6 @@ Hover over a return's status to see:
 
 | Counter | What it tells you |
 | --- | --- |
-| **obs-vban-audio-0.2.2-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
 | Capture queue overflows / queue peak | Source capture is outrunning the return worker. |
 | Late audio frames | Source audio arrived after its mixing deadline. |
 | Clock corrections | Small drift adjustments; increasing normally is expected. |

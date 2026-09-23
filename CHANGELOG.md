@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3
+
+- Add an independent PCM 16-bit / PCM 24-bit dropdown to each return, before its destination fields.
+- Preserve PCM 24-bit for older configurations and save both format choices.
+- Keep sample-rate handling unchanged (48 kHz returns when OBS is set to 48 kHz).
+- Validate mixed-format UDP payloads and live format changes in OBS 31.1.1 and 32.2.1.
+
 ## 0.2.2
 
 - Add an EXE installer with standard/portable choices, OBS folder validation and scoped uninstall support (same plugin DLL).

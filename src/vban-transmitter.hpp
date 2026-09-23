@@ -22,13 +22,14 @@ struct ReturnStatus {
     uint64_t capture_drops = 0, late_audio_frames = 0, send_gaps = 0;
     uint64_t clipped_samples = 0, nonfinite_samples = 0, clock_corrections = 0, clock_discontinuities = 0;
     size_t capture_queue_peak = 0, capture_queue_capacity = 0;
+    int pcm_bits = 24;
     uint32_t buffer_ms = default_return_buffer_ms;
     bool audio_priority = false;
     double max_send_gap_ms = 0, last_send_age_ms = 0;
 };
 const char *return_state_name(ReturnState state);
-size_t encode_stereo24(uint8_t *out, uint32_t rate, const std::string &name,
-                       uint32_t sequence, const float *samples, size_t frames);
+size_t encode_stereo_pcm(uint8_t *out, uint32_t rate, const std::string &name,
+                         uint32_t sequence, const float *samples, size_t frames, int pcm_bits);
 class Transmitter {
 public:
     struct Routing;

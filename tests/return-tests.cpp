@@ -12,23 +12,46 @@ static void check(bool ok, const char *what) { if (!ok) throw std::runtime_error
 int main() {
  try {
     std::array<uint8_t, max_datagram> bytes{};
-    std::array<float, return_frames*2> samples{};
+    std::array<float, 256*2> samples{};
     samples[0] = -2; samples[1] = 2; samples[2] = 0.125f; samples[3] = std::nanf("");
     Packet packet;
-    for (const auto rate : sample_rates) {
-        auto length = encode_stereo24(bytes.data(), rate, "1234567890123456", UINT32_MAX, samples.data(), return_frames);
+    for (const auto bits : {16, 24}) for (const auto rate : sample_rates) {
+        auto length = encode_stereo_pcm(bytes.data(), rate, "1234567890123456", UINT32_MAX, samples.data(), return_frames,bits);
         check(decode(bytes.data(), length, packet) == ParseError::none, "TX packet decodes at every VBAN rate");
-        check(packet.sequence == UINT32_MAX && packet.format.rate == rate && packet.format.type == 2 &&
+        check(packet.sequence == UINT32_MAX && packet.format.rate == rate && packet.format.type == (bits == 16 ? 1 : 2) &&
               packet.format.channels == 2 && packet.name == "1234567890123456", "TX header fields");
         check(packet.samples[0] == -1 && packet.samples[1] < 1 && packet.samples[1] > .999f &&
-              packet.samples[2] == .125f && packet.samples[3] == 0, "PCM24 clamp and nonfinite sanitization");
+              packet.samples[2] == .125f && packet.samples[3] == 0, "PCM16/24 clamp and nonfinite sanitization");
     }
-    check(!encode_stereo24(bytes.data(),48000,"seventeen-chars!!x",0,samples.data(),128),"Reject overlong name");
-    check(!encode_stereo24(bytes.data(),48001,"VALID",0,samples.data(),128),"Reject unsupported rate");
-    check(!encode_stereo24(bytes.data(),48000,"VALID",0,samples.data(),240),"Respect VBAN datagram size");
+    check(!encode_stereo_pcm(bytes.data(),48000,"seventeen-chars!!x",0,samples.data(),128,24),"Reject overlong name");
+    check(!encode_stereo_pcm(bytes.data(),48001,"VALID",0,samples.data(),128,24),"Reject unsupported rate");
+    check(!encode_stereo_pcm(bytes.data(),48000,"VALID",0,samples.data(),240,24),"Respect VBAN datagram size");
+    const std::array<float, 10> known{-1, 1, -.5f, .5f, 1.0f/32768, -1.0f/32768,
+        .125f, std::nanf(""), INFINITY, -INFINITY};
+    const std::array<uint8_t,20> expected16{0,128,255,127,0,192,0,64,1,0,255,255,0,16,0,0,0,0,0,0};
+    const std::array<uint8_t,30> expected24{0,0,128,255,255,127,0,0,192,0,0,64,0,1,0,0,255,255,0,0,16,0,0,0,0,0,0,0,0,0};
+    check(encode_stereo_pcm(bytes.data(),48000,"PCM",0,known.data(),5,16)==48 &&
+          bytes[4]==3 && bytes[7]==1 && std::equal(expected16.begin(),expected16.end(),bytes.begin()+header_size),
+          "PCM16 header and signed little-endian interleaved sample bytes match the protocol");
+    check(encode_stereo_pcm(bytes.data(),48000,"PCM",0,known.data(),5,24)==58 &&
+          bytes[4]==3 && bytes[7]==2 && std::equal(expected24.begin(),expected24.end(),bytes.begin()+header_size),
+          "PCM24 header and payload remain byte-compatible");
+    bytes.fill(0xa5);
+    check(encode_stereo_pcm(bytes.data(),48000,"PCM",0,samples.data(),239,24)==1462 &&
+          bytes[1462]==0xa5 && bytes[1463]==0xa5,"Maximum PCM24 payload stays within its buffer");
+    check(encode_stereo_pcm(bytes.data(),48000,"PCM",0,samples.data(),256,16)==1052,
+          "PCM16 allows all 256 frames");
+    check(!encode_stereo_pcm(bytes.data(),48000,"PCM",0,samples.data(),257,16),"Reject more than 256 PCM16 frames");
+    check(!encode_stereo_pcm(bytes.data(),48000,"PCM",0,samples.data(),0,16),"Reject empty audio");
+    check(!encode_stereo_pcm(nullptr,48000,"PCM",0,samples.data(),128,16),"Reject a null destination");
+    check(!encode_stereo_pcm(bytes.data(),48000,"PCM",0,nullptr,128,24),"Reject a null sample buffer");
+    for(int bits : {0,8,20,32})
+        check(!encode_stereo_pcm(bytes.data(),48000,"PCM",0,samples.data(),128,bits),"Reject unsupported PCM depths");
+    check(default_returns()[0].pcm_bits==24 && default_returns()[1].pcm_bits==24,
+          "Old return settings keep the PCM24 default");
     uint32_t sequence = UINT32_MAX;
-    encode_stereo24(bytes.data(),48000,"VALID",sequence++,samples.data(),128);
-    const auto length = encode_stereo24(bytes.data(),48000,"VALID",sequence++,samples.data(),128);
+    encode_stereo_pcm(bytes.data(),48000,"VALID",sequence++,samples.data(),128,24);
+    const auto length = encode_stereo_pcm(bytes.data(),48000,"VALID",sequence++,samples.data(),128,24);
     check(decode(bytes.data(),length,packet)==ParseError::none && packet.sequence==0,"Frame counter rollover");
     AudioRing<int,4> small;
     for(int i=0;i<4;++i) { auto *p=small.write_slot();check(p,"Ring slot");*p=i;small.publish(); }
@@ -182,6 +205,27 @@ int main() {
     Packet p1,p2;decode(first.data(),n1,p1);decode(second.data(),n2,p2);
     check(p1.sequence==1 && p2.sequence==2,"Independent counters when one return is disabled");
     const auto valid=cfg;
+    for (const auto depths : {std::array<int,2>{16,24}, {24,16}, {16,16}, {24,24}}) {
+        cfg = valid;
+        cfg[0].pcm_bits = depths[0]; cfg[1].pcm_bits = depths[1];
+        ready = tx.prepare(cfg,error); check(bool(ready),"Prepare independent PCM formats"); tx.activate(ready);
+        tx.send(samples.data(),128,48000);
+        const auto left_size=receive(0,first), right_size=receive(1,second);
+        check(left_size==int(header_size+128*2*(depths[0]/8)) &&
+              right_size==int(header_size+128*2*(depths[1]/8)),"Actual UDP payload sizes follow each return format");
+        check(decode(first.data(),left_size,p1)==ParseError::none &&
+              decode(second.data(),right_size,p2)==ParseError::none,"Mixed-format UDP packets decode");
+        check(p1.format.type==(depths[0]==16?1:2) && p2.format.type==(depths[1]==16?1:2) &&
+              p1.format.rate==48000 && p2.format.rate==48000,"Each destination has its own PCM depth at 48 kHz");
+        check(p1.name=="FIRST" && p2.name=="SECOND" && p2.sequence==p1.sequence+1,
+              "Format changes preserve stream names and independent sequence counters");
+        for(size_t i=0;i<p1.samples.size();++i)
+            check(std::fabs(p1.samples[i]-p2.samples[i])<=1.0f/32768,"Mixed PCM depths carry the same mix within quantization");
+        check(tx.status(0).pcm_bits==depths[0] && tx.status(1).pcm_bits==depths[1],"Status reports applied formats");
+    }
+    cfg=valid;cfg[0].pcm_bits=32;check(!tx.prepare(cfg,error),"Reject unsupported configured bit depth");
+    cfg[0].enabled=false;check(!tx.prepare(cfg,error),"Invalid disabled-return format cannot be saved");
+    cfg=valid;
     cfg[0].stream_name=std::string(17,'A');check(!tx.prepare(cfg,error),"Invalid names are rejected, never truncated");
     cfg=valid;cfg[0].destination_ip="bad";check(!tx.prepare(cfg,error),"Reject invalid destination");
     cfg=valid;cfg[0].destination_port=0;check(!tx.prepare(cfg,error),"Reject port zero");
@@ -206,7 +250,7 @@ int main() {
     check(tx.status(0).state==ReturnState::sending && tx.status(0).send_gaps>=1 &&
           tx.status(0).max_send_gap_ms>=1000,"Report sender scheduling gaps and recover live status");
     for(auto s:sockets)closesocket(s);
-    std::cout<<"Return core passed: PCM24 protocol, rollover, concurrent ring, timeline alignment, two actual UDP destinations, independent counters and invalid settings.\n";
+    std::cout<<"Return core passed: PCM16/24 protocol, rollover, concurrent ring, timeline alignment, two actual UDP destinations, independent counters and invalid settings.\n";
     return 0;
  } catch(const std::exception &e) { std::cerr<<"Return test failed: "<<e.what()<<"\n";return 1; }
 }

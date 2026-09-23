@@ -1,4 +1,4 @@
-# Monitor return implementation (0.2.2)
+# Monitor return implementation (0.2.3)
 
 The existing receiver.cpp, stream-buffer.cpp and vban-protocol.cpp processing is
 unchanged. Config gains two optional return records; missing records default off.
@@ -78,11 +78,14 @@ all its blocks to be discarded as late.
 
 One 128-frame stereo block is summed for all participating sources. Fader gain is
 applied once; the version-appropriate mute flag is applied once. Nonfinite and
-out-of-range summed samples are sanitized/clamped at PCM24 conversion; there is
+out-of-range summed samples are sanitized/clamped at PCM16/24 conversion; there is
 no compressor, limiter, auto-normalization or extra gain control.
 
-PCM24 payload is encoded once. Each enabled destination gets its own stream-name
-header, independent uint32 packet counter and socket. All sample-rate/header/name
+The mix is encoded once per selected PCM format and shared between destinations
+using that format. Each enabled destination gets its own stream-name header,
+independent uint32 packet counter and socket. PCM16 uses signed little-endian
+2-byte samples (VBAN type 1); PCM24 uses signed little-endian 3-byte samples
+(type 2). Both use the same 128-frame cadence and OBS sample rate. All sample-rate/header/name
 constants come from the existing protocol definitions. UDP source ports are
 ephemeral and independent of RX bind. An error sending to one destination does
 not prevent sending to the other.
@@ -155,3 +158,17 @@ Capture capacity is now 128 blocks per source. Status additionally reports
 queue peak, clock corrections/discontinuities, clipped/nonfinite PCM samples,
 and MMCSS availability. See [the audio review](AUDIO-REVIEW-0.2.2.md) for the
 reproduced defect, timing/PCM regression tests and practical limits.
+
+### Return PCM format (0.2.3)
+
+Each return persists `pcm_bits` (16 or 24) inside its existing JSON object. Missing
+fields default to 24, preserving previous installations. The shared settings version
+remains 1. Invalid configured bit depths are rejected before saving or swapping
+active routes. Selecting a format only takes effect on Apply/OK; status refreshes
+do not rebuild either dropdown. Applied format is included in the status tooltip.
+
+Protocol tests check exact signed little-endian sample bytes, clipping and nonfinite
+sanitization, packet-size bounds, sequence continuity and both mixed-format orders.
+OBS integration checks saved PCM16, PCM24 migration, independent choices, Apply,
+rejected-format rollback and dropdown stability. Actual UDP sinks verify both
+formats stay stereo at 48 kHz while OBS is configured at 48 kHz.

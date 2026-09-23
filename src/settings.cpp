@@ -74,6 +74,7 @@ Config read_config(std::string &error) {
         r.destination_port = destination_port > 0 && destination_port <= 65535
             ? static_cast<uint16_t>(destination_port) : 0;
         r.stream_name = item.value("stream_name").toString(QString::fromStdString(r.stream_name)).toStdString();
+        r.pcm_bits = item.value("pcm_bits").toInt(24);
     }
     return cfg;
 }
@@ -89,7 +90,8 @@ bool write_config(const Config &cfg, std::string &error) {
     QJsonArray returns;
     for (const auto &r : cfg.returns) returns.append(QJsonObject{
         {"enabled", r.enabled}, {"destination_ip", QString::fromStdString(r.destination_ip)},
-        {"destination_port", r.destination_port}, {"stream_name", QString::fromStdString(r.stream_name)}});
+        {"destination_port", r.destination_port}, {"stream_name", QString::fromStdString(r.stream_name)},
+        {"pcm_bits", r.pcm_bits}});
     const QJsonDocument doc(QJsonObject{
         {"version", 1}, {"common_ip", cfg.common_ip}, {"sender_ip", QString::fromStdString(cfg.sender_ip)},
         {"port", cfg.port}, {"slots", slots}, {"returns", returns},
@@ -202,14 +204,20 @@ public:
         returns_layout->addLayout(network_form);
         auto *returns_grid = new QGridLayout;
         returns_layout->addLayout(returns_grid);
-        const char *return_headers[]{"Return", "Enabled", "Destination IPv4", "UDP port", "VBAN stream name", "Status"};
-        for (int c = 0; c < 6; ++c) returns_grid->addWidget(new QLabel(return_headers[c], returns_box), 0, c);
+        const char *return_headers[]{"Return", "Enabled", "PCM format", "Destination IPv4", "UDP port", "VBAN stream name", "Status"};
+        for (int c = 0; c < 7; ++c) returns_grid->addWidget(new QLabel(return_headers[c], returns_box), 0, c);
         for (size_t i = 0; i < return_count; ++i) {
             const auto &r = initial.returns[i];
             const int row = static_cast<int>(i) + 1;
             const auto prefix = QString("return_%1_").arg(i);
             return_enabled_[i] = new QCheckBox(returns_box);
             return_enabled_[i]->setObjectName(prefix + "enabled"); return_enabled_[i]->setChecked(r.enabled);
+            return_formats_[i] = new QComboBox(returns_box);
+            return_formats_[i]->setObjectName(prefix + "pcm_bits");
+            return_formats_[i]->addItem("PCM 16-bit", 16);
+            return_formats_[i]->addItem("PCM 24-bit", 24);
+            return_formats_[i]->setCurrentIndex(return_formats_[i]->findData(r.pcm_bits == 16 ? 16 : 24));
+            return_formats_[i]->setToolTip("Choose this return's PCM bit depth. The sample rate follows OBS (48 kHz when OBS is set to 48 kHz). Click Apply to use the selection.");
             return_ips_[i] = new QLineEdit(QString::fromStdString(r.destination_ip), returns_box);
             return_ips_[i]->setObjectName(prefix + "ip"); return_ips_[i]->setPlaceholderText("192.168.1.50");
             return_ports_[i] = new QSpinBox(returns_box);
@@ -221,9 +229,10 @@ public:
             return_states_[i]->setObjectName(prefix + "status");
             returns_grid->addWidget(new QLabel(QString("RETURN %1").arg(i+1), returns_box), row, 0);
             returns_grid->addWidget(return_enabled_[i], row, 1);
-            returns_grid->addWidget(return_ips_[i], row, 2);
-            returns_grid->addWidget(return_ports_[i], row, 3);
-            returns_grid->addWidget(return_names_[i], row, 4);
+            returns_grid->addWidget(return_formats_[i], row, 2);
+            returns_grid->addWidget(return_ips_[i], row, 3);
+            returns_grid->addWidget(return_ports_[i], row, 4);
+            returns_grid->addWidget(return_names_[i], row, 5);
             auto *status_layout = new QVBoxLayout;
             status_layout->addWidget(return_states_[i]);
             return_routes_[i] = new QLabel(returns_box);
@@ -233,12 +242,12 @@ public:
             return_routes_[i]->setMinimumWidth(200);
             return_routes_[i]->setMinimumHeight(2 * return_routes_[i]->fontMetrics().lineSpacing());
             status_layout->addWidget(return_routes_[i]);
-            returns_grid->addLayout(status_layout, row, 5);
+            returns_grid->addLayout(status_layout, row, 6);
         }
         auto *return_help = new QLabel("Both returns send the same OBS headphone/monitor mix. "
             "Use Monitor Only or Monitor and Output in OBS to include a source. "
             "Do not route the returns back into the VBAN feeds entering OBS.", returns_box);
-        return_help->setWordWrap(true); returns_grid->addWidget(return_help, 3, 0, 1, 6);
+        return_help->setWordWrap(true); returns_grid->addWidget(return_help, 3, 0, 1, 7);
         layout->addWidget(returns_box);
         error_ = new QLabel(this); error_->setWordWrap(true); error_->setTextFormat(Qt::PlainText);
         layout->addWidget(error_);
@@ -291,6 +300,7 @@ private:
                 .arg(s.packets).arg(s.errors).arg(s.last_send_age_ms, 0, 'f', 1)
                 .arg(s.send_gaps).arg(s.max_send_gap_ms, 0, 'f', 1)
                 .arg(s.capture_drops).arg(s.late_audio_frames).arg(QString::fromStdString(s.detail));
+            diagnostic += QString("\nApplied format: Stereo PCM %1-bit").arg(s.pcm_bits);
             diagnostic += QString("\nReturn buffer: %1 ms\nCapture queue peak: %2 / %3 blocks (busiest source)\n"
                 "Clock corrections: %4\nClock discontinuities: %5\nClipped samples: %6\nInvalid float samples: %7\n"
                 "Windows audio priority: %8\nClipping means the combined mix exceeds full scale; lower source faders.")
@@ -313,7 +323,8 @@ private:
             senders_[i]->text().trimmed().toStdString(), names_[i]->text().toStdString()};
         for (size_t i = 0; i < return_count; ++i) cfg.returns[i] = {
             return_enabled_[i]->isChecked(), return_ips_[i]->text().trimmed().toStdString(),
-            static_cast<uint16_t>(return_ports_[i]->value()), return_names_[i]->text().toStdString()};
+            static_cast<uint16_t>(return_ports_[i]->value()), return_names_[i]->text().toStdString(),
+            return_formats_[i]->currentData().toInt()};
         std::string error;
         try {
             if (!apply_(cfg, error)) {
@@ -336,6 +347,7 @@ private:
     std::array<QCheckBox *, return_count> return_enabled_{};
     std::array<QLineEdit *, return_count> return_ips_{}, return_names_{};
     std::array<QSpinBox *, return_count> return_ports_{};
+    std::array<QComboBox *, return_count> return_formats_{};
     std::array<QLabel *, return_count> return_states_{}, return_routes_{};
     QComboBox *return_local_{};
 };

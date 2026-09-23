@@ -20,24 +20,29 @@ const char *return_state_name(ReturnState state) {
     }
     return "Error";
 }
-size_t encode_stereo24(uint8_t *out, uint32_t rate, const std::string &name,
-                       uint32_t sequence, const float *samples, size_t frames) {
+size_t encode_stereo_pcm(uint8_t *out, uint32_t rate, const std::string &name,
+                         uint32_t sequence, const float *samples, size_t frames, int pcm_bits) {
+    if (!out || !samples || (pcm_bits != 16 && pcm_bits != 24)) return 0;
+    const size_t bytes_per_sample = static_cast<size_t>(pcm_bits / 8);
     const auto found = std::find(sample_rates.begin(), sample_rates.end(), rate);
     if (found == sample_rates.end() || !valid_stream_name(name) || !frames ||
-        frames > 256 || header_size + frames * 6 > max_datagram) return 0;
+        frames > 256 || header_size + frames * 2 * bytes_per_sample > max_datagram) return 0;
     std::memset(out, 0, header_size);
     std::memcpy(out, "VBAN", 4);
     out[4] = static_cast<uint8_t>(found - sample_rates.begin());
-    out[5] = static_cast<uint8_t>(frames - 1); out[6] = 1; out[7] = 2;
+    out[5] = static_cast<uint8_t>(frames - 1); out[6] = 1;
+    out[7] = pcm_bits == 16 ? 1 : 2; // VBAN signed little-endian PCM16 / PCM24.
     std::memcpy(out + 8, name.data(), name.size());
     for (size_t i = 0; i < 4; ++i) out[24+i] = static_cast<uint8_t>(sequence >> (i*8));
+    const double scale = pcm_bits == 16 ? 32768.0 : 8388608.0;
     for (size_t i = 0; i < frames * 2; ++i) {
         const double value = std::isfinite(samples[i]) ? samples[i] : 0.0;
-        const auto pcm = static_cast<int32_t>(std::clamp(std::round(value * 8388608.0), -8388608.0, 8388607.0));
+        const auto pcm = static_cast<int32_t>(std::clamp(std::round(value * scale), -scale, scale - 1.0));
         const auto bits = static_cast<uint32_t>(pcm);
-        for (size_t b = 0; b < 3; ++b) out[header_size+i*3+b] = static_cast<uint8_t>(bits >> (b*8));
+        for (size_t b = 0; b < bytes_per_sample; ++b)
+            out[header_size+i*bytes_per_sample+b] = static_cast<uint8_t>(bits >> (b*8));
     }
-    return header_size + frames * 6;
+    return header_size + frames * 2 * bytes_per_sample;
 }
 std::vector<LocalIPv4> local_ipv4_addresses(std::string &error) {
     std::vector<LocalIPv4> result;
@@ -106,8 +111,11 @@ Transmitter::Prepared Transmitter::prepare(const ReturnConfigs &cfg, std::string
     auto next = std::make_shared<Routing>();
     for (size_t i = 0; i < return_count; ++i) {
         auto &d = next->destinations[i]; d.config = cfg[i];
-        if (!d.config.enabled) continue;
         const auto prefix = "Return " + std::to_string(i+1) + ": ";
+        if (d.config.pcm_bits != 16 && d.config.pcm_bits != 24) {
+            error = prefix + "Choose PCM 16-bit or PCM 24-bit."; return {};
+        }
+        if (!d.config.enabled) continue;
         d.address.sin_family = AF_INET;
         d.address.sin_port = htons(d.config.destination_port);
         if (InetPtonA(AF_INET, d.config.destination_ip.c_str(), &d.address.sin_addr) != 1 ||
@@ -161,6 +169,7 @@ void Transmitter::activate(Prepared next) {
     routing_ = std::move(next);
     for (size_t i = 0; i < return_count; ++i) {
         status_[i] = {}; last_send_[i] = {};
+        if (routing_) status_[i].pcm_bits = routing_->destinations[i].config.pcm_bits;
         if (routing_ && routing_->destinations[i].config.enabled) {
             const auto &d = routing_->destinations[i];
             auto &s = status_[i]; s.state = ReturnState::ready;
@@ -181,9 +190,9 @@ bool Transmitter::enabled() const {
 void Transmitter::send(const float *stereo, size_t frames, uint32_t rate) {
     std::lock_guard lock(mutex_);
     if (!routing_) return;
-    // Encode the shared mix ONCE. Only names and independent counters differ.
-    std::array<uint8_t, max_datagram> packet{};
-    const auto size = encode_stereo24(packet.data(), rate, "MONITOR", 0, stereo, frames);
+    // Encode once per selected format; destinations using the same format share PCM.
+    std::array<std::array<uint8_t, max_datagram>, 2> packets{};
+    std::array<size_t, 2> sizes{};
     bool silence = true;
     uint64_t clipped = 0, nonfinite = 0;
     for (size_t f = 0; f < frames*2; ++f) {
@@ -195,7 +204,11 @@ void Transmitter::send(const float *stereo, size_t frames, uint32_t rate) {
         const auto &d = routing_->destinations[i];
         if (!d.config.enabled) continue;
         auto &state = status_[i];
-        if (!size) { state.state = ReturnState::error; state.detail = "Unsupported OBS return sample rate."; continue; }
+        const auto format = d.config.pcm_bits == 16 ? 0u : 1u;
+        auto &packet = packets[format];
+        auto &size = sizes[format];
+        if (!size) size = encode_stereo_pcm(packet.data(), rate, "MONITOR", 0, stereo, frames, d.config.pcm_bits);
+        if (!size) { state.state = ReturnState::error; state.detail = "Unsupported return sample rate or audio block size."; continue; }
         state.clipped_samples += clipped;
         state.nonfinite_samples += nonfinite;
         std::memset(packet.data()+8, 0, 16);
