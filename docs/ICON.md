@@ -38,3 +38,18 @@ Generation prompt (the tool returned the same 2:1 composition at 1774 × 887):
 
 The generated PNG was encoded as JPEG at quality 92 to meet GitHub's upload size
 limit. The original composition was preserved.
+
+### ElkaSoft attribution
+
+The README and social-preview banner include **by ElkaSoft** beneath the platform
+line. The approved image was edited with the built-in imagegen tool. The plugin
+and installer icons use the original icon artwork above.
+
+Edit prompt:
+
+> Preserve the existing 2:1 wide composition, dark navy background, cyan waveform and return-arrow logo, orange nodes, circuit details, all existing text and placement. Add exactly "by ElkaSoft" in the empty bottom area below the Windows/OBS line, aligned with the right-hand text block with comfortable bottom padding. Use a refined, readable, slightly italic contemporary font, approximately the height of the inputs/returns subtitle or slightly smaller. Use warm amber-orange for "Elka", cyan-blue for "Soft", and smaller muted grey "by". Capital E and S, with no space within ElkaSoft. No new icon, crop or redesign.
+
+The approved PNG was compressed to JPEG at quality 92 without resizing:
+**1774 × 887 pixels, 175,489 bytes**, below GitHub's 1 MB social-preview limit.
+Use the same `docs/images/social-preview.jpg` file for the manual social-preview
+upload in repository Settings.

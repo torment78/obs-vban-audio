@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/social-preview.jpg" width="100%" alt="OBS VBAN Audio: 8 inputs and 2 monitor returns for OBS Studio on Windows x64">
+  <img src="docs/images/social-preview.jpg" width="100%" alt="OBS VBAN Audio by ElkaSoft: 8 inputs and 2 monitor returns for OBS Studio on Windows x64">
 </p>
 
 # OBS VBAN Audio
