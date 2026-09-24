@@ -10,6 +10,11 @@ try {
     $env:QT_PLUGIN_PATH = $runtime
     & (Join-Path $repoRoot "build_x64\$Configuration\obs-return-smoke32.exe") (Join-Path $repoRoot "build_x64\$Configuration\obs-vban-audio.dll") (Join-Path $repoRoot 'data') (Join-Path $repoRoot 'build_x64\return-smoke32-config')
     if ($LASTEXITCODE -ne 0) { throw "OBS 32.2.1 return smoke failed ($LASTEXITCODE)." }
+    foreach ($channels in 1..8) {
+        & (Join-Path $repoRoot "build_x64\$Configuration\obs-multichannel32.exe") (Join-Path $repoRoot "build_x64\$Configuration\obs-vban-audio.dll") (Join-Path $repoRoot 'data') (Join-Path $repoRoot "build_x64\multichannel32-$channels-config") $channels
+        if ($LASTEXITCODE -ne 0) { throw "OBS 32.2.1 $channels-channel receive test failed ($LASTEXITCODE)." }
+    }
+
 } finally {
     $env:PATH = $originalPath
     $env:QT_PLUGIN_PATH = $originalQt

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.4 (pre-release)
+
+- Rename the app, Tools menu, source entry, installer and artwork to VBAN Stream.
+- Preserve saved scenes, stream settings and automatic friendly names from earlier versions.
+- Confirm the existing automatic 1–8-channel receiver with distinct signed signals on every channel, PCM16/24, live format changes, maximum-size packets and buffer drift correction.
+- Add end-to-end incoming-channel checks for OBS 31.1.1 and 32.2.1, including the silent eighth lane for seven-channel input.
+- Explain OBS's 7.1 output setting and stereo downmixing in the installation guide.
+- Log the plugin's actual build version.
+
 ## 0.2.3
 
 - Add an independent PCM 16-bit / PCM 24-bit dropdown to each return, before its destination fields.

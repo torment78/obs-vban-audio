@@ -1,4 +1,4 @@
-; VBAN Audio: install the already-tested release payload into an OBS root.
+; VBAN Stream: install the already-tested release payload into an OBS root.
 #ifndef AppVersion
   #error AppVersion must be supplied by tools/package-installer.ps1
 #endif
@@ -11,9 +11,9 @@
 
 [Setup]
 AppId={{CBB7B1A9-2B1D-4AA5-8494-82CBA4EA194C}
-AppName=VBAN Audio
+AppName=VBAN Stream
 AppVersion={#AppVersion}
-AppPublisher=VBAN Audio contributors
+AppPublisher=VBAN Stream contributors
 AppPublisherURL=https://github.com/torment78/obs-vban-audio
 AppSupportURL=https://github.com/torment78/obs-vban-audio/issues
 AppUpdatesURL=https://github.com/torment78/obs-vban-audio/releases
@@ -25,7 +25,7 @@ DisableWelcomePage=no
 LicenseFile=..\LICENSE
 InfoAfterFile=installer-finish.txt
 OutputDir={#OutputPath}
-OutputBaseFilename=obs-vban-audio-{#AppVersion}-windows-x64-setup
+OutputBaseFilename=vban-stream-{#AppVersion}-windows-x64-setup
 Compression=lzma2
 SolidCompression=yes
 SetupIconFile=vban-audio.ico
@@ -44,14 +44,14 @@ RestartApplications=no
 Uninstallable=yes
 UninstallFilesDir={app}\data\obs-plugins\obs-vban-audio
 CreateUninstallRegKey=IsStandard
-UninstallDisplayName=VBAN Audio {#AppVersion}
+UninstallDisplayName=VBAN Stream {#AppVersion}
 UninstallDisplayIcon={uninstallexe}
 ; A reinstall after moving portable OBS must record only the current root.
 UninstallLogMode=overwrite
 DirExistsWarning=no
 AllowRootDirectory=no
 AllowNoIcons=yes
-VersionInfoDescription=VBAN Audio setup for installed or portable OBS
+VersionInfoDescription=VBAN Stream setup for installed or portable OBS
 VersionInfoVersion={#AppVersion}.0
 
 [Files]
@@ -274,7 +274,7 @@ begin
   if IsStandard then begin
     OtherCopy := ExpandConstant('{commonappdata}\obs-studio\plugins\obs-vban-audio\bin\64bit\obs-vban-audio.dll');
     if FileExists(OtherCopy) then
-      Result := 'Another copy of VBAN Audio exists here:' + #13#10 + OtherCopy + #13#10#13#10 + 'Remove that plugin copy first, or keep using its ZIP installation layout. ' +
+      Result := 'Another copy of VBAN Stream exists here:' + #13#10 + OtherCopy + #13#10#13#10 + 'Remove that plugin copy first, or keep using its ZIP installation layout. ' +
         'This installer uses the selected OBS folder to avoid loading the plugin twice.';
   end;
 end;
@@ -308,7 +308,7 @@ begin
   end;
   try
     if OBSRunning then begin
-      SuppressibleMsgBox('Close OBS Studio before uninstalling VBAN Audio.',
+      SuppressibleMsgBox('Close OBS Studio before uninstalling VBAN Stream.',
         mbError, MB_OK, IDOK);
       Exit;
     end;

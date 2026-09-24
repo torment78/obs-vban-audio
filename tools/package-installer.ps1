@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 if (-not $InnoCompiler) { $InnoCompiler = Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Inno Setup 6\ISCC.exe' }
 $version = (Get-Content -LiteralPath (Join-Path $repoRoot 'buildspec.json') -Raw | ConvertFrom-Json).version
-$releaseZip = Join-Path $repoRoot "dist\obs-vban-audio-$version-obs-root.zip"
+$releaseZip = Join-Path $repoRoot "dist\vban-stream-$version-obs-root.zip"
 $builtDll = Join-Path $repoRoot "build_x64\$Configuration\obs-vban-audio.dll"
 if (-not (Test-Path -LiteralPath $InnoCompiler)) { throw 'Install Inno Setup 6, or specify -InnoCompiler.' }
 if (-not (Test-Path -LiteralPath $releaseZip)) { throw 'Run tools/build.ps1 -Package with Visual Studio 2026 first.' }
@@ -38,7 +38,7 @@ $script = Join-Path $repoRoot 'installer\obs-vban-audio.iss'
 $output = Join-Path $repoRoot 'dist'
 & $InnoCompiler "/DAppVersion=$version" "/DPayloadDir=$stage" "/DOutputPath=$output" $script
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
-$setup = Join-Path $output "obs-vban-audio-$version-windows-x64-setup.exe"
+$setup = Join-Path $output "vban-stream-$version-windows-x64-setup.exe"
 Get-FileHash -LiteralPath $setup -Algorithm SHA256 | Format-List
 Write-Output "Payload DLL SHA256: $payloadHash"
 Write-Output "Installer: $setup"

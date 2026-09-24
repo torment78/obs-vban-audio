@@ -82,19 +82,25 @@ int main(int argc,char **argv) {
         obs_module_t *module=nullptr;
         check(obs_open_module(&module,argv[1],argv[2])==MODULE_SUCCESS,"Load plugin DLL");
         check(obs_init_module(module),"Initialize plugin DLL");
-        check(frontend->action && frontend->action->text()=="VBAN Audio Settings","Tools menu registration");
+        check(frontend->action && frontend->action->text()=="VBAN Stream Settings","Tools menu registration");
         obs_data_t *settings=obs_data_create();obs_data_set_int(settings,"slot",0);
         obs_source_t *first=obs_source_create("vban_audio_input","Test Mic",settings,nullptr);
         obs_source_t *second=obs_source_create("vban_audio_input","Test Duplicate",settings,nullptr);
         check(first && second,"Create native OBS sources");
         check(obs_source_get_output_flags(first)&OBS_SOURCE_AUDIO,"Source is audio input");
         // Default source names follow friendly labels; user names survive selection changes.
-        auto *automatic = obs_source_create("vban_audio_input", "VBAN Audio", nullptr, nullptr);
-        auto *duplicate = obs_source_create("vban_audio_input", "VBAN Audio 2", nullptr, nullptr);
+        auto *automatic = obs_source_create("vban_audio_input", "VBAN Stream", nullptr, nullptr);
+        auto *duplicate = obs_source_create("vban_audio_input", "VBAN Stream 2", nullptr, nullptr);
         check(automatic && duplicate, "Create sources for naming checks");
-        check(std::string(obs_source_get_name(automatic)) == "VBAN Audio", "Unselected source keeps its name");
+        check(std::string(obs_source_get_name(automatic)) == "VBAN Stream", "Unselected source keeps its name");
         obs_source_update(automatic, settings);
         obs_source_update(duplicate, settings);
+        auto *legacy = obs_source_create("vban_audio_input", "VBAN Audio 3", nullptr, nullptr);
+        check(legacy, "Load an unselected legacy source name");
+        obs_source_update(legacy, settings);
+        check(std::string(obs_source_get_name(legacy)).find("Stream 1") == 0, "Legacy default name follows its friendly label");
+        obs_source_release(legacy);
+
         check(std::string(obs_source_get_name(automatic)) == "Stream 1", "Fader uses friendly label, not VBAN stream name");
         check(std::string(obs_source_get_name(duplicate)) == "Stream 1 2", "Duplicate fader names remain unique");
         obs_data_set_int(settings, "slot", 1);

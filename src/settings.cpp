@@ -129,7 +129,7 @@ public:
     SettingsDialog(QWidget *parent, std::shared_ptr<Receiver> receiver, Config initial,
                    std::shared_ptr<MonitorReturn> returns, std::function<bool(const Config &, std::string &)> apply)
         : QDialog(parent), receiver_(std::move(receiver)), returns_(std::move(returns)), apply_(std::move(apply)) {
-        setWindowTitle("VBAN Audio Settings");
+        setWindowTitle("VBAN Stream Settings");
         char *icon = obs_module_file("vban-audio.png");
         if (icon) { setWindowIcon(QIcon(QString::fromUtf8(icon))); bfree(icon); }
         setAttribute(Qt::WA_DeleteOnClose);

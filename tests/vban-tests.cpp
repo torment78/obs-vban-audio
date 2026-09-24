@@ -109,6 +109,43 @@ static void parser_tests() {
             check(out.samples.size() == size_t(out.frames)*out.format.output_channels(),"Fuzz output bounds");
     }
 }
+static void multichannel_tests() {
+    // Same buffer: changing the wire channel count needs no user setting.
+    StreamBuffer buffer;
+    uint64_t start = 1000000000;
+    for (uint8_t channels = 1; channels <= 8; ++channels) {
+        for (uint8_t type : {uint8_t(1), uint8_t(2)}) {
+            const unsigned width = type == 2 ? 3 : 2;
+            const uint16_t frames = static_cast<uint16_t>(std::min<size_t>(256, (max_datagram - 28) / (channels * width)));
+            const unsigned planes = channels == 7 ? 8 : channels;
+            uint32_t sequence = 0;
+            // Fill above the drift-correction threshold using maximum-size legal packets.
+            for (unsigned buffered = 0; buffered < 2880; buffered += frames) {
+                auto bytes = wire(sequence++, type, channels, frames, "MULTICHANNEL");
+                for (unsigned f = 0; f < frames; ++f) for (unsigned c = 0; c < channels; ++c) {
+                    const float value = (c % 2 ? -1.f : 1.f) * float(c + 1) / 32.f;
+                    const auto sample = static_cast<uint32_t>(static_cast<int32_t>(value * (type == 2 ? 8388608.f : 32768.f)));
+                    for (unsigned b = 0; b < width; ++b)
+                        bytes[28 + (f * channels + c) * width + b] = uint8_t(sample >> (8 * b));
+                }
+                Packet decoded;
+                check(decode(bytes.data(), bytes.size(), decoded) == ParseError::none, "Maximum-size multichannel packet accepted");
+                check(decoded.format.channels == channels, "Automatic channel-count detection");
+                buffer.push(std::move(decoded), start);
+            }
+            const auto corrections = buffer.counters().drift_corrections;
+            auto block = buffer.pull(start + 30000000);
+            check(block && block->samples.size() == size_t(block->frames) * planes, "Multichannel output allocation");
+            check(buffer.counters().drift_corrections > corrections, "Exercise multichannel drift interpolation");
+            for (unsigned f = 0; f < block->frames; ++f) for (unsigned c = 0; c < planes; ++c) {
+                const float expected = c < channels ? (c % 2 ? -1.f : 1.f) * float(c + 1) / 32.f : 0.f;
+                check(std::abs(block->samples[f * planes + c] - expected) < .00001f,
+                    "All signed channel samples survive parsing, buffering and drift correction");
+            }
+            start += 1000000000;
+        }
+    }
+}
 static void buffer_tests() {
     constexpr uint64_t t = 1000000000;
     StreamBuffer buffer;
@@ -266,7 +303,7 @@ static void network_tests() {
 }
 int main() {
     try {
-        parser_tests();buffer_tests();clock_drift_tests();network_tests();
+        parser_tests();multichannel_tests();buffer_tests();clock_drift_tests();network_tests();
         std::cout << "Passed " << checks << " checks, including 20,000 malformed datagrams and UDP integration.\n";
         return 0;
     } catch(const std::exception &e) {

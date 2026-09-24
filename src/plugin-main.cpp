@@ -14,7 +14,7 @@ OBS_MODULE_USE_DEFAULT_LOCALE("obs-vban-audio", "en-US")
 MODULE_EXPORT const char *obs_module_description(void) {
     return "Native VBAN PCM audio receiver with eight shared stream slots.";
 }
-MODULE_EXPORT const char *obs_module_name(void) { return "VBAN Audio"; }
+MODULE_EXPORT const char *obs_module_name(void) { return "VBAN Stream"; }
 
 namespace {
 using namespace vban;
@@ -53,13 +53,17 @@ int selected(obs_data_t *settings) {
     const auto slot = obs_data_get_int(settings, "slot");
     return slot >= 0 && slot < int(slot_count) ? static_cast<int>(slot) : -1;
 }
-const char *source_name(void *) { return "VBAN Audio"; }
+const char *source_name(void *) { return "VBAN Stream"; }
 bool default_source_name(const std::string &name) {
-    const std::string base = source_name(nullptr);
-    if (name == base) return true;
-    const std::string prefix = base + " ";
-    return name.size() > prefix.size() && name.compare(0, prefix.size(), prefix) == 0 &&
-        std::all_of(name.begin() + prefix.size(), name.end(), [](char c) { return c >= '0' && c <= '9'; });
+    // Preserve automatic naming for unselected sources saved before the product rename.
+    for (const std::string base : {std::string(source_name(nullptr)), std::string("VBAN Audio")}) {
+        if (name == base) return true;
+        const std::string prefix = base + " ";
+        if (name.size() > prefix.size() && name.compare(0, prefix.size(), prefix) == 0 &&
+            std::all_of(name.begin() + prefix.size(), name.end(), [](char c) { return c >= '0' && c <= '9'; }))
+            return true;
+    }
+    return false;
 }
 void update(void *data, obs_data_t *settings) {
     if (!data) return;
@@ -239,10 +243,10 @@ bool obs_module_load(void) {
         info.get_name = source_name; info.create = create; info.destroy = destroy;
         info.get_defaults = defaults; info.get_properties = properties; info.update = update;
         obs_register_source(&info);
-        settings_action = static_cast<QAction *>(obs_frontend_add_tools_menu_qaction("VBAN Audio Settings"));
+        settings_action = static_cast<QAction *>(obs_frontend_add_tools_menu_qaction("VBAN Stream Settings"));
         QObject::connect(settings_action, &QAction::triggered, settings_action, [] { show_settings(); });
         obs_frontend_add_event_callback(frontend_event, nullptr);
-        blog(LOG_INFO, "[obs-vban-audio] Loaded version 0.2.2");
+        blog(LOG_INFO, "[obs-vban-audio] VBAN Stream version %s", VBAN_PLUGIN_VERSION);
         return true;
     } catch (const std::exception &e) {
         blog(LOG_ERROR, "[obs-vban-audio] Load failed: %s", e.what());

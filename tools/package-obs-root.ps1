@@ -14,6 +14,6 @@ Copy-Item -LiteralPath (Join-Path $repoRoot 'data\vban-audio.png') -Destination 
 Copy-Item -LiteralPath (Join-Path $repoRoot 'LICENSE') -Destination (Join-Path $pluginData 'LICENSE.txt') -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot 'docs\INSTALL-OBS-ROOT.txt') -Destination (Join-Path $stage 'VBAN-INSTALL.txt') -Force
 $version = (Get-Content -LiteralPath (Join-Path $repoRoot 'buildspec.json') -Raw | ConvertFrom-Json).version
-$zip = Join-Path $repoRoot "dist\obs-vban-audio-$version-obs-root.zip"
+$zip = Join-Path $repoRoot "dist\vban-stream-$version-obs-root.zip"
 Compress-Archive -LiteralPath (Join-Path $stage 'obs-plugins'),(Join-Path $stage 'data'),(Join-Path $stage 'VBAN-INSTALL.txt') -DestinationPath $zip -Force
 Write-Output "OBS-root package: $zip"

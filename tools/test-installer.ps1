@@ -2,7 +2,7 @@ param([string]$SetupPath = '')
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 $version = (Get-Content -LiteralPath (Join-Path $repoRoot 'buildspec.json') -Raw | ConvertFrom-Json).version
-if (-not $SetupPath) { $SetupPath = Join-Path $repoRoot "dist\obs-vban-audio-$version-windows-x64-setup.exe" }
+if (-not $SetupPath) { $SetupPath = Join-Path $repoRoot "dist\vban-stream-$version-windows-x64-setup.exe" }
 $runtime = Join-Path $repoRoot '.deps\obs-runtime-32.2.1'
 $expectedDll = Join-Path $repoRoot 'build_x64\RelWithDebInfo\obs-vban-audio.dll'
 if (-not (Test-Path -LiteralPath $SetupPath)) { throw 'Build the installer first.' }
