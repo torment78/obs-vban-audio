@@ -3,8 +3,11 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <obs.h>
+#include <obs-audio-controls.h>
 #include <QApplication>
 #include <QAction>
+#include <QDialog>
+#include <QLabel>
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
@@ -72,7 +75,8 @@ int main(int argc, char **argv) {
         qputenv("QT_QPA_PLATFORM", "minimal:enable_fonts");
         QApplication app(argc, argv);
         QWidget window;
-        obs_frontend_set_callbacks_internal(new TestFrontend(window));
+        auto *frontend = new TestFrontend(window);
+        obs_frontend_set_callbacks_internal(frontend);
         WSADATA wsa{};
         check(WSAStartup(MAKEWORD(2, 2), &wsa) == 0, "Winsock startup");
         SOCKET sender = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -106,6 +110,19 @@ int main(int argc, char **argv) {
         Capture state{channels, channels == 7 ? 8 : channels};
         obs_source_add_audio_capture_callback(source, capture, &state);
         obs_source_inc_active(source);
+        auto *meter = obs_volmeter_create(OBS_FADER_LOG);
+        check(meter && obs_volmeter_attach_source(meter, source), "Attach native OBS multichannel meter");
+        frontend->action->trigger(); app.processEvents();
+        auto *dialog = window.findChild<QDialog *>();
+        check(dialog, "Open settings with live input indicators");
+        auto *input_channels = dialog->findChild<QLabel *>("input_channels_0");
+        auto *disabled_channels = dialog->findChild<QLabel *>("input_channels_1");
+        auto *receiving = dialog->findChild<QLabel *>("receiving_streams");
+        auto *input_format = dialog->findChild<QLabel *>("input_format_0");
+        check(input_channels && disabled_channels && receiving && input_format, "Input indicators exist");
+        check(input_channels->text() == QString::fromUtf8("—") &&
+              disabled_channels->text() == QString::fromUtf8("—"), "Waiting and disabled streams have no live channel count");
+        check(receiving->text() == "Receiving: 0 / 8 streams", "No configured stream is counted until packets arrive");
         uint32_t sequence = 0;
         auto send = [&](unsigned count, unsigned type, unsigned milliseconds) {
             auto deadline = std::chrono::steady_clock::now();
@@ -122,14 +139,26 @@ int main(int argc, char **argv) {
             const auto before = state.matching.load();
             send(channels, type, 700);
             check(state.matching.load() > before + 20, "Every sample in every OBS lane matches its own signed channel marker");
+            check(input_channels->text() == QString::number(channels), "Live UI reports the incoming count after a channel change");
+            check(receiving->text() == "Receiving: 1 / 8 streams", "Multichannel packets still count as one incoming stream");
+            check(input_format->text() == (type == 1 ? "PCM 16-bit" : "PCM 24-bit"), "Live input format follows the actual received bit depth");
+            check(obs_volmeter_get_nr_channels(meter) == int(state.planes), "Native OBS meter exposes every lane allowed by its audio layout");
         }
         check(!state.backwards, "Timestamps remain monotonic across format changes");
+        if (channels == 8) dialog->grab().save(root + "/input-indicators.png");
+        const auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+        while (receiving->text() != "Receiving: 0 / 8 streams" && std::chrono::steady_clock::now() < timeout) {
+            app.processEvents(); std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+        check(receiving->text() == "Receiving: 0 / 8 streams" && input_channels->text() == QString::fromUtf8("—") && input_format->text() == QString::fromUtf8("—"),
+              "Stopped streams clear the live count and do not retain a stale channel indicator");
+        obs_volmeter_destroy(meter);
         obs_source_remove_audio_capture_callback(source, capture, &state);
         obs_source_dec_active(source); obs_source_release(source);
         obs_shutdown(); app.processEvents(); obs_frontend_set_callbacks_internal(nullptr);
         closesocket(sender); WSACleanup();
         std::cout << "OBS multichannel passed: " << channels << " incoming channels, PCM16/24, distinct signed lanes, "
-            << state.matching << " matching blocks, automatic live channel change"
+            << state.matching << " matching blocks, automatic live channel change, input indicators, native meter lanes, stream timeout"
             << (channels == 7 ? ", silent eighth lane" : "") << ".\n";
         return 0;
     } catch (const std::exception &e) {

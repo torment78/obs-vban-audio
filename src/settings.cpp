@@ -147,8 +147,8 @@ public:
         form->addRow("UDP listen port", port_);
         layout->addLayout(form);
         auto *grid = new QGridLayout;
-        const char *headers[]{"Slot", "Enabled", "Friendly name", "VBAN stream name", "Sender IPv4", "Live status"};
-        for (int c = 0; c < 6; ++c) grid->addWidget(new QLabel(headers[c], this), 0, c);
+        const char *headers[]{"Slot", "Enabled", "Friendly name", "VBAN stream name", "Sender IPv4", "Live status", "Channels", "Input format"};
+        for (int c = 0; c < 8; ++c) grid->addWidget(new QLabel(headers[c], this), 0, c);
         for (size_t i = 0; i < slot_count; ++i) {
             const auto &s = initial.slots[i];
             const int row = static_cast<int>(i)+1;
@@ -161,15 +161,31 @@ public:
             senders_[i] = new QLineEdit(QString::fromStdString(s.sender_ip), this);
             senders_[i]->setObjectName(QString("sender_%1").arg(i)); senders_[i]->setMaxLength(15);
             states_[i] = new QLabel(this);
+            channels_[i] = new QLabel(this);
+            channels_[i]->setObjectName(QString("input_channels_%1").arg(i));
+            channels_[i]->setAlignment(Qt::AlignCenter);
+            channels_[i]->setFrameShape(QFrame::StyledPanel);
+            channels_[i]->setMargin(3);
+            channels_[i]->setFixedWidth(channels_[i]->fontMetrics().horizontalAdvance("8") + 24);
+            formats_[i] = new QLabel(this);
+            formats_[i]->setObjectName(QString("input_format_%1").arg(i));
+            formats_[i]->setMinimumWidth(formats_[i]->fontMetrics().horizontalAdvance("PCM 24-bit"));
+            channels_[i]->setToolTip("Incoming VBAN channels before OBS downmixing. No live input is shown as a dash.");
             grid->addWidget(enabled_[i], row, 1);
             grid->addWidget(labels_[i], row, 2);
             grid->addWidget(names_[i], row, 3);
             grid->addWidget(senders_[i], row, 4);
             grid->addWidget(states_[i], row, 5);
+            grid->addWidget(channels_[i], row, 6, Qt::AlignCenter);
+            grid->addWidget(formats_[i], row, 7);
         }
         layout->addLayout(grid);
+        receiving_ = new QLabel(this);
+        receiving_->setObjectName("receiving_streams");
+        layout->addWidget(receiving_);
         auto *help = new QLabel("Stream names are case-sensitive (1–16 printable ASCII characters). "
-            "Live status reflects the applied settings. Multiple OBS sources can select the same slot.", this);
+            "Live status reflects the applied settings. Each stream can carry 1–8 input channels; OBS may downmix them to its output layout. "
+            "Multiple OBS sources can select the same slot.", this);
         help->setWordWrap(true); layout->addWidget(help);
         auto *returns_box = new QGroupBox("VBAN RETURNS", this);
         auto *returns_layout = new QVBoxLayout(returns_box);
@@ -274,11 +290,17 @@ private:
         for (auto *sender : senders_) sender->setEnabled(!common_->isChecked());
     }
     void refresh() {
+        unsigned receiving = 0;
         for (size_t i = 0; i < slot_count; ++i) {
             auto s = receiver_->status(i);
             states_[i]->setText(QString::fromUtf8(state_name(s.state)));
+            const bool live = s.state == State::receiving;
+            if (live) ++receiving;
+            channels_[i]->setText(live ? QString::number(s.format.channels) : QString::fromUtf8("—"));
+            formats_[i]->setText(live ? QString::fromUtf8(format_name(s.format.type)) : QString::fromUtf8("—"));
             states_[i]->setToolTip(QString::fromStdString(status_text(*receiver_, static_cast<int>(i))));
         }
+        receiving_->setText(QString("Receiving: %1 / %2 streams").arg(receiving).arg(slot_count));
         for (size_t i = 0; i < return_count; ++i) {
             const auto s = returns_->status(i);
             QString text = return_state_name(s.state);
@@ -340,10 +362,10 @@ private:
     QCheckBox *common_{};
     QLineEdit *ip_{};
     QSpinBox *port_{}, *return_buffer_{};
-    QLabel *error_{};
+    QLabel *error_{}, *receiving_{};
     std::array<QCheckBox *, slot_count> enabled_{};
     std::array<QLineEdit *, slot_count> labels_{}, names_{}, senders_{};
-    std::array<QLabel *, slot_count> states_{};
+    std::array<QLabel *, slot_count> states_{}, channels_{}, formats_{};
     std::array<QCheckBox *, return_count> return_enabled_{};
     std::array<QLineEdit *, return_count> return_ips_{}, return_names_{};
     std::array<QSpinBox *, return_count> return_ports_{};

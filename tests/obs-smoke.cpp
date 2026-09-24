@@ -14,6 +14,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QLineEdit>
+#include <QLabel>
 #include <QPushButton>
 #include <QThread>
 #include <QWidget>
@@ -158,6 +159,13 @@ int main(int argc,char **argv) {
         send("S0",1200);
         check(property_refreshes == 0, "Idle status updates do not rebuild and close the stream dropdown");
         check(a.count>10 && b.count>10,"VBAN audio reaches both real OBS capture callbacks");
+        auto *receiving = dialog->findChild<QLabel *>("receiving_streams");
+        check(receiving && receiving->text() == "Receiving: 1 / 8 streams", "Duplicate OBS sources do not inflate the incoming stream count");
+        // Both streams continue to receive packets, while one carries four input channels.
+        for (int repeat = 0; repeat < 8; ++repeat) { send("S0", 50); send("S1", 50, 4); }
+        auto *input_channels = dialog->findChild<QLabel *>("input_channels_1");
+        check(receiving->text() == "Receiving: 2 / 8 streams", "Distinct live streams are counted independently");
+        check(input_channels && input_channels->text() == "4", "Input count is preserved when OBS output is stereo");
         dialog->grab().save(root+"/settings-dialog.png");
         stream->setText("CHANGED");
         auto *buttons=dialog->findChild<QDialogButtonBox*>();

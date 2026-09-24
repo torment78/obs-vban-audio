@@ -83,6 +83,8 @@ into OBS. These builds are unsigned.
 4. Click **Apply**. Configure the sender to send to this OBS computer and the same port.
 5. Add **Sources + → VBAN Stream**, then select the configured stream.
 
+**Channels** in VBAN Stream Settings shows a small number box for each receiving stream: **2** for stereo, **4** for four channels, or **8** for eight channels. **Input format** beside it shows the received PCM bit depth or floating-point format. These are the incoming values before OBS downmixing. **Receiving** counts live streams, not individual channels or OBS source copies. A waiting, disabled or stopped stream shows a dash instead of an old channel count.
+
 Each named stream automatically accepts **1–8 audio channels**; there is no
 channel-count selector. The eight slots are eight separate streams, each of which
 can carry up to eight channels. One source remains one mixer fader.
