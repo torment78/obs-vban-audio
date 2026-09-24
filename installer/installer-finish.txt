@@ -1,4 +1,4 @@
-OBS VBAN Audio is ready.
+VBAN Audio is ready.
 
 Start OBS normally, then open Tools > VBAN Audio Settings.
 
@@ -7,6 +7,6 @@ For portable OBS, use your usual portable shortcut or launch option. This instal
 The usage guide and uninstaller are in:
 <OBS folder>\data\obs-plugins\obs-vban-audio
 
-Standard installations can also be removed from Windows Settings > Apps > Installed apps > OBS VBAN Audio.
+Standard installations can also be removed from Windows Settings > Apps > Installed apps > VBAN Audio.
 
 Close OBS before updating or uninstalling. OBS scenes, profiles, and VBAN settings are preserved.

@@ -1,15 +1,18 @@
 <p align="center">
-  <img src="docs/images/social-preview.jpg" width="100%" alt="OBS VBAN Audio by ElkaSoft: 8 inputs and 2 monitor returns for OBS Studio on Windows x64">
+  <img src="docs/images/social-preview.jpg" width="100%" alt="VBAN Audio by ElkaSoft: 8 inputs and 2 monitor returns for OBS Studio on Windows x64">
 </p>
 
-# OBS VBAN Audio
+# VBAN Audio
 
 **Eight VBAN audio inputs and two monitor-mix returns for OBS Studio on Windows x64.**
+
+An independent plugin by **ElkaSoft** for OBS Studio.
 
 Receive named VBAN streams directly in OBS. Send the OBS monitoring mix back to
 two computers, each with its own destination address, UDP port, and stream name.
 
-[**Download the latest release**](https://github.com/torment78/obs-vban-audio/releases/latest)
+[**Download the latest stable release**](https://github.com/torment78/obs-vban-audio/releases/latest)
+ · [Try the 0.2.3 pre-release](https://github.com/torment78/obs-vban-audio/releases/tag/v0.2.3)
  · [Installation guide](docs/INSTALL-OBS-ROOT.txt)
  · [Report an issue](https://github.com/torment78/obs-vban-audio/issues)
 
@@ -17,11 +20,11 @@ two computers, each with its own destination address, UDP port, and stream name.
 
 Free and open source under GPL-2.0-or-later. Donations support development and are optional.
 
-[Horizontal and vertical banners](docs/ARTWORK.md) — with and without the VoiceMeeter / VB-Audio credit.
+[Choose from eight banners](docs/ARTWORK.md) — circuit or waves designs, horizontal or vertical, with or without the VoiceMeeter / VB-Audio credit.
 
 ## Download and install
 
-Version **0.2.3**. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
+The files below are the **0.2.3 pre-release**. The latest stable version is **0.2.2**. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
 
 | Download | Where it goes |
 | --- | --- |

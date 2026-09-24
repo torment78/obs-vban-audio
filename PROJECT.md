@@ -1,4 +1,4 @@
-# OBS VBAN Audio
+# VBAN Audio
 
 Native Windows x64 OBS plugin: eight shared VBAN receive slots and two independent
 monitor-mix returns. Build with Visual Studio 2026 and the windows-x64 CMake preset.

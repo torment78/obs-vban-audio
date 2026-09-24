@@ -85,7 +85,7 @@ Close OBS before replacing files. Use the same installation layout as before.
 Keep only one installed copy. Existing stream selections and settings are retained.
 
 Installer users: close OBS, then use Windows Settings > Apps > Installed apps >
-OBS VBAN Audio for a standard installation. For portable OBS, run unins000.exe
+VBAN Audio for a standard installation. For portable OBS, run unins000.exe
 inside <OBS folder>\data\obs-plugins\obs-vban-audio. The uninstaller removes only
 its installed files and preserves OBS settings and unrelated files. If you move
 the OBS folder, run the installer again for the new location before uninstalling.

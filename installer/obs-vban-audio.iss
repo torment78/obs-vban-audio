@@ -1,4 +1,4 @@
-; OBS VBAN Audio: install the already-tested release payload into an OBS root.
+; VBAN Audio: install the already-tested release payload into an OBS root.
 #ifndef AppVersion
   #error AppVersion must be supplied by tools/package-installer.ps1
 #endif
@@ -11,9 +11,9 @@
 
 [Setup]
 AppId={{CBB7B1A9-2B1D-4AA5-8494-82CBA4EA194C}
-AppName=OBS VBAN Audio
+AppName=VBAN Audio
 AppVersion={#AppVersion}
-AppPublisher=OBS VBAN Audio contributors
+AppPublisher=VBAN Audio contributors
 AppPublisherURL=https://github.com/torment78/obs-vban-audio
 AppSupportURL=https://github.com/torment78/obs-vban-audio/issues
 AppUpdatesURL=https://github.com/torment78/obs-vban-audio/releases
@@ -44,14 +44,14 @@ RestartApplications=no
 Uninstallable=yes
 UninstallFilesDir={app}\data\obs-plugins\obs-vban-audio
 CreateUninstallRegKey=IsStandard
-UninstallDisplayName=OBS VBAN Audio {#AppVersion}
+UninstallDisplayName=VBAN Audio {#AppVersion}
 UninstallDisplayIcon={uninstallexe}
 ; A reinstall after moving portable OBS must record only the current root.
 UninstallLogMode=overwrite
 DirExistsWarning=no
 AllowRootDirectory=no
 AllowNoIcons=yes
-VersionInfoDescription=OBS VBAN Audio setup for installed or portable OBS
+VersionInfoDescription=VBAN Audio setup for installed or portable OBS
 VersionInfoVersion={#AppVersion}.0
 
 [Files]
@@ -274,7 +274,7 @@ begin
   if IsStandard then begin
     OtherCopy := ExpandConstant('{commonappdata}\obs-studio\plugins\obs-vban-audio\bin\64bit\obs-vban-audio.dll');
     if FileExists(OtherCopy) then
-      Result := 'Another copy of OBS VBAN Audio exists here:' + #13#10 + OtherCopy + #13#10#13#10 + 'Remove that plugin copy first, or keep using its ZIP installation layout. ' +
+      Result := 'Another copy of VBAN Audio exists here:' + #13#10 + OtherCopy + #13#10#13#10 + 'Remove that plugin copy first, or keep using its ZIP installation layout. ' +
         'This installer uses the selected OBS folder to avoid loading the plugin twice.';
   end;
 end;
@@ -308,7 +308,7 @@ begin
   end;
   try
     if OBSRunning then begin
-      SuppressibleMsgBox('Close OBS Studio before uninstalling OBS VBAN Audio.',
+      SuppressibleMsgBox('Close OBS Studio before uninstalling VBAN Audio.',
         mbError, MB_OK, IDOK);
       Exit;
     end;
