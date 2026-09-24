@@ -1,6 +1,6 @@
 # Windows installer
 
-The EXE is an additional package for the existing 0.2.3 release. It contains the
+The EXE is an additional package for the existing 0.2.4 release. It contains the
 same tested plugin DLL as the ZIP downloads.
 
 ## Build
@@ -21,7 +21,7 @@ Packaging also converts the existing plugin PNG into a multi-resolution Windows
 ICO and embeds it in Setup/Uninstall. The Installed apps entry uses the uninstaller's
 matching icon. All seven ICO frame payloads were verified in the compiled setup EXE.
 
-Output: `dist\obs-vban-audio-0.2.3-windows-x64-setup.exe`.
+Output: `dist\vban-stream-0.2.4-windows-x64-setup.exe`.
 
 ## Installation behavior
 
@@ -66,7 +66,7 @@ destinations under `build_installer`. It does not start OBS. It refuses to run
 over an existing current-user uninstall registration and removes the temporary
 registration through the uninstaller.
 
-53 checks passed for the final 0.2.3 installer:
+53 checks passed for the final 0.2.4 installer:
 
 - Both standard and portable installation, matching DLL hash and required files.
 - Repeated installation/update without duplicate uninstallers.
@@ -78,7 +78,7 @@ registration through the uninstaller.
 - Reinstall/uninstall in the moved folder leaves the original OBS copy intact.
 
 The tested DLL SHA256 is
-`B797D864AD00D34E1A9E49AF201D7AB00EF66A8EF1B4A7C9ED4357CB04814381`.
+`8404B20BCD651DB7D38A7F378F5FEA8BC2C56595D3897DABD2555F2B80DF4DAB`.
 
 The administrator consent dialog and writes to protected Program Files folders
 are not exercised by these non-elevated tests. Desktop UI inspection was

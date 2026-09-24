@@ -1,6 +1,6 @@
 # Project artwork
 
-The product is **VBAN Audio by ElkaSoft**, an independent plugin for OBS Studio.
+The product is **VBAN Stream by ElkaSoft**, an independent plugin for OBS Studio.
 
 ## Icon
 
@@ -22,11 +22,11 @@ background. It contains no lettering.
 
 Two background styles are available: straight circuit lines and waves with
 circuit lines. Each has horizontal and vertical versions with and without the
-small VoiceMeeter / VB-Audio credit. Every banner reads **VBAN Audio**, retains
+small VoiceMeeter / VB-Audio credit. Every banner reads **VBAN Stream**, retains
 **by ElkaSoft**, and keeps **Windows x64 | OBS Studio** as the compatibility line.
 
 The README uses [images/social-preview.jpg](images/social-preview.jpg):
-**1774 × 887 pixels, 210,335 bytes**. All JPEGs are under 1 MB, at
+**1774 × 887 pixels, 214,474 bytes**. All JPEGs are under 1 MB, at
 the same dimensions as their PNG originals. JPEG quality is 92.
 
 To change the image shown when the GitHub repository link is shared:

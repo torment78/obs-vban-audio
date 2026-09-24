@@ -1,18 +1,19 @@
 <p align="center">
-  <img src="docs/images/social-preview.jpg" width="100%" alt="VBAN Audio by ElkaSoft: 8 inputs and 2 monitor returns for OBS Studio on Windows x64">
+  <img src="docs/images/social-preview.jpg" width="100%" alt="VBAN Stream by ElkaSoft: 8 inputs and 2 monitor returns for OBS Studio on Windows x64">
 </p>
 
-# VBAN Audio
+# VBAN Stream
 
 **Eight VBAN audio inputs and two monitor-mix returns for OBS Studio on Windows x64.**
 
 An independent plugin by **ElkaSoft** for OBS Studio.
 
-Receive named VBAN streams directly in OBS. Send the OBS monitoring mix back to
+Receive named VBAN streams with 1–8 channels each directly in OBS. Send the OBS monitoring mix back to
 two computers, each with its own destination address, UDP port, and stream name.
 
 [**Download the latest stable release**](https://github.com/torment78/obs-vban-audio/releases/latest)
- · [Try the 0.2.3 pre-release](https://github.com/torment78/obs-vban-audio/releases/tag/v0.2.3)
+ · [Try the 0.2.4 pre-release](https://github.com/torment78/obs-vban-audio/releases/tag/v0.2.4)
+ · [Download all banners](https://github.com/torment78/obs-vban-audio/releases/download/v0.2.4/VBAN-Stream-artwork.zip)
  · [Installation guide](docs/INSTALL-OBS-ROOT.txt)
  · [Report an issue](https://github.com/torment78/obs-vban-audio/issues)
 
@@ -24,22 +25,22 @@ Free and open source under GPL-2.0-or-later. Donations support development and a
 
 ## Download and install
 
-The files below are the **0.2.3 pre-release**. The latest stable version is **0.2.2**. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
+The files below are the **0.2.4 pre-release**. The latest stable version is **0.2.2** and retains the earlier VBAN Audio name. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
 
 | Download | Where it goes |
 | --- | --- |
-| **obs-vban-audio-0.2.3-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
-| **obs-vban-audio-0.2.3-obs-root.zip** | Merge its **obs-plugins** and **data** folders into the OBS installation folder. Works with **normal and portable OBS**. |
-| **obs-vban-audio-0.2.3-windows-x64.zip** | Copy its **obs-vban-audio** folder into **C:\ProgramData\obs-studio\plugins** for a normal OBS installation. |
+| **vban-stream-0.2.4-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
+| **vban-stream-0.2.4-obs-root.zip** | Merge its **obs-plugins** and **data** folders into the OBS installation folder. Works with **normal and portable OBS**. |
+| **vban-stream-0.2.4-windows-x64.zip** | Copy its **obs-vban-audio** folder into **C:\ProgramData\obs-studio\plugins** for a normal OBS installation. |
 
 ### Using the installer
 
-1. Close OBS, run **obs-vban-audio-0.2.3-windows-x64-setup.exe**, and approve the Windows administrator prompt.
+1. Close OBS, run **vban-stream-0.2.4-windows-x64-setup.exe**, and approve the Windows administrator prompt.
 2. Choose **Standard OBS installation** (selected by default) or **Portable OBS**.
 3. Check the detected standard OBS folder, or click **Browse** to choose your portable
    OBS root: the folder containing **bin**, **data**, and **obs-plugins**.
 4. Click **Next**, review the paths, then **Install**. Restart OBS and open
-   **Tools → VBAN Audio Settings**.
+   **Tools → VBAN Stream Settings**.
 
 Both installer modes put the DLL and data inside the selected OBS folder. Standard
 mode adds a Windows Installed apps entry; portable mode keeps its uninstaller in
@@ -66,7 +67,7 @@ C:\Program Files\obs-studio\
 ```
 
 For portable OBS, use the same layout inside its own root folder.
-Restart OBS and open **Tools → VBAN Audio Settings**.
+Restart OBS and open **Tools → VBAN Stream Settings**.
 The ZIPs also include **VBAN-INSTALL.txt**.
 
 Requires the Microsoft Visual C++ x64 runtime. Uses the OBS installation's own
@@ -75,12 +76,21 @@ into OBS. These builds are unsigned.
 
 ## Receive VBAN audio in OBS
 
-1. Open **Tools → VBAN Audio Settings**.
+1. Open **Tools → VBAN Stream Settings**.
 2. Enter the sender computer's IPv4 address and the UDP listen port (default **6980**).
 3. Enable the slots you need. Enter each exact, case-sensitive VBAN stream name.
    Use **Friendly name** for the label you want in OBS.
 4. Click **Apply**. Configure the sender to send to this OBS computer and the same port.
-5. Add **Sources + → VBAN Audio**, then select the configured stream.
+5. Add **Sources + → VBAN Stream**, then select the configured stream.
+
+Each named stream automatically accepts **1–8 audio channels**; there is no
+channel-count selector. The eight slots are eight separate streams, each of which
+can carry up to eight channels. One source remains one mixer fader.
+
+To retain all eight channels through OBS, set **Settings → Audio → Channels → 7.1**
+and use an output/recording format that supports it. With OBS set to **Stereo**,
+OBS downmixes multichannel input to stereo. Seven-channel input uses a silent
+eighth channel. The two monitor returns remain stereo.
 
 The source appears as a normal OBS mixer fader. Default source names adopt the
 friendly name; manually assigned names are preserved. Multiple sources can select
@@ -174,10 +184,10 @@ Install **Desktop development with C++**, **MSVC v145**, **Windows SDK 10.0.2610
 and **C++ CMake tools for Windows**. CMake 4.3 or newer is required.
 No .NET/C# project or separate Qt installation is needed.
 
-Clone into a working folder, then run PowerShell there:
+To build the current pre-release, clone the dev branch into a working folder, then run PowerShell there:
 
 ```powershell
-git clone https://github.com/torment78/obs-vban-audio.git
+git clone --branch dev https://github.com/torment78/obs-vban-audio.git
 cd obs-vban-audio
 .\tools\build.ps1 -Package
 ```
@@ -223,7 +233,7 @@ Include OBS/plugin versions, sample rate, return buffer, and which counters incr
 Remove private addresses or other personal information from logs before posting.
 
 [Donate on Ko-fi](https://ko-fi.com/msffixit), or use the Donate button in
-**Tools → VBAN Audio Settings**.
+**Tools → VBAN Stream Settings**.
 
 Built on the [official OBS plugin template](https://github.com/obsproject/obs-plugintemplate)
 and the [public OBS source API](https://docs.obsproject.com/reference-sources).

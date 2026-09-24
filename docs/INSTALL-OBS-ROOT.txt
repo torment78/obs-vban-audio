@@ -1,9 +1,9 @@
-VBAN Audio 0.2.3 - Installation and usage
+VBAN Stream 0.2.4 - Installation and usage
 
 INSTALLER (STANDARD OR PORTABLE OBS)
 
 1. Close all OBS Studio windows.
-2. Run obs-vban-audio-0.2.3-windows-x64-setup.exe.
+2. Run vban-stream-0.2.4-windows-x64-setup.exe.
    Approve the Windows administrator prompt. Protected folders such as
    Program Files need administrator access.
 3. Select one option:
@@ -14,7 +14,7 @@ INSTALLER (STANDARD OR PORTABLE OBS)
    Examples: C:\Program Files\obs-studio or D:\OBS-Portable.
    Do not select bin, 64bit, or obs-plugins themselves.
 5. Click Next, review the destination paths, then click Install.
-6. Start OBS and open Tools > VBAN Audio Settings.
+6. Start OBS and open Tools > VBAN Stream Settings.
 
 Both options place the plugin DLL in:
 <OBS folder>\obs-plugins\64bit\obs-vban-audio.dll
@@ -35,10 +35,10 @@ The plugin works with normal and portable OBS Studio on Windows x64.
 Both ZIP files contain the same plugin DLL, arranged for different install paths.
 Install only one copy.
 
-- obs-vban-audio-0.2.3-obs-root.zip:
+- vban-stream-0.2.4-obs-root.zip:
   Merge into the OBS installation folder. Works with normal AND portable OBS.
 
-- obs-vban-audio-0.2.3-windows-x64.zip:
+- vban-stream-0.2.4-windows-x64.zip:
   Copy the obs-vban-audio folder into C:\ProgramData\obs-studio\plugins
   for a normal OBS installation.
 
@@ -61,7 +61,7 @@ INSTALL THE OBS-ROOT ZIP
 
    Do not put the whole extracted package inside obs-plugins or bin.
 
-4. Start OBS and open Tools > VBAN Audio Settings.
+4. Start OBS and open Tools > VBAN Stream Settings.
 
 INSTALL THE WINDOWS-X64 ZIP
 
@@ -75,7 +75,7 @@ INSTALL THE WINDOWS-X64 ZIP
    C:\ProgramData\obs-studio\plugins\obs-vban-audio\data\locale\en-US.ini
    C:\ProgramData\obs-studio\plugins\obs-vban-audio\data\vban-audio.png
 
-4. Start OBS and open Tools > VBAN Audio Settings.
+4. Start OBS and open Tools > VBAN Stream Settings.
 
 For portable OBS, use the OBS-root ZIP instead.
 
@@ -85,7 +85,7 @@ Close OBS before replacing files. Use the same installation layout as before.
 Keep only one installed copy. Existing stream selections and settings are retained.
 
 Installer users: close OBS, then use Windows Settings > Apps > Installed apps >
-VBAN Audio for a standard installation. For portable OBS, run unins000.exe
+VBAN Stream for a standard installation. For portable OBS, run unins000.exe
 inside <OBS folder>\data\obs-plugins\obs-vban-audio. The uninstaller removes only
 its installed files and preserves OBS settings and unrelated files. If you move
 the OBS folder, run the installer again for the new location before uninstalling.
@@ -102,7 +102,7 @@ libraries into an OBS installation.
 
 RECEIVE AUDIO IN OBS
 
-1. Open Tools > VBAN Audio Settings.
+1. Open Tools > VBAN Stream Settings.
 2. Enter the computer SENDING audio to OBS in Common sender IPv4.
    Turn off common-IP mode to use a separate sender address for each slot.
 3. Set UDP listen port. The default is 6980.
@@ -113,8 +113,17 @@ RECEIVE AUDIO IN OBS
 7. Click Apply.
 8. On the sender, configure VBAN output to this OBS computer's IPv4 address
    and the same UDP port.
-9. In an OBS scene, choose Sources > + > VBAN Audio.
+9. In an OBS scene, choose Sources > + > VBAN Stream.
 10. Select the configured stream from VBAN Stream.
+
+Each named stream automatically receives 1 to 8 audio channels. No channel-count
+selection is needed. The eight slots are separate streams; each can carry up to
+eight channels. One source still appears as one mixer fader.
+
+To retain eight channels in OBS, set Settings > Audio > Channels to 7.1 and use an
+output or recording format that supports it. Stereo OBS output downmixes the
+incoming channels. Seven-channel input pads channel 8 with silence.
+The two monitor returns are stereo.
 
 The source appears in the OBS Audio Mixer. Automatically named sources use
 the slot's Friendly name. Names you assign yourself are preserved.
@@ -137,7 +146,7 @@ periodically while you are selecting a stream.
 
 SEND THE OBS MONITOR MIX BACK
 
-1. Open Tools > VBAN Audio Settings > VBAN RETURNS.
+1. Open Tools > VBAN Stream Settings > VBAN RETURNS.
 2. In Send from this PC, select this OBS computer's LAN address and adapter.
    Select the address belonging to the computer, not its gateway/router.
    Automatic lets Windows choose the route.
@@ -238,5 +247,5 @@ https://github.com/torment78/obs-vban-audio/issues
 Donate on Ko-fi:
 https://ko-fi.com/msffixit
 
-The Donate on Ko-fi button in VBAN Audio Settings opens the same page.
+The Donate on Ko-fi button in VBAN Stream Settings opens the same page.
 The plugin is free; donations are optional.
