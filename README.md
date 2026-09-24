@@ -17,6 +17,8 @@ two computers, each with its own destination address, UDP port, and stream name.
 
 Free and open source under GPL-2.0-or-later. Donations support development and are optional.
 
+[Horizontal and vertical banners](docs/ARTWORK.md) — with and without the VoiceMeeter / VB-Audio credit.
+
 ## Download and install
 
 Version **0.2.3**. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.

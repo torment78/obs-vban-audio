@@ -16,40 +16,30 @@ Generation prompt:
 
 > Use case: logo-brand. Asset type: small square icon for an independent open-source project named OBS VBAN Audio, used in its GitHub README and Discord sharing. Create a polished, original audio-over-network symbol: a bold audio waveform flowing between two small connected endpoint nodes, with a subtle sense of a return loop. Crisp geometric silhouette, deep charcoal background, bright cyan with a small warm amber accent, restrained soft dimensional highlights. Centered composition, generous safe margin, very readable when displayed at 96 pixels. No words, no letters, no watermarks, no existing OBS or VB-Audio corporate logos, no mockup. One square finished icon.
 
-## Social preview banner
+## Banners and social preview
 
-Asset: [images/social-preview.jpg](images/social-preview.jpg). Solid background,
-1774 × 887 pixels (2:1), JPEG under 1 MB. Also displayed at the top of the README.
+The current banner adds depth to the original straight circuit-line background.
+The logo design and product wording are retained, with **by ElkaSoft** in the
+bottom-left footer. Horizontal and vertical versions are available with and
+without the small VoiceMeeter / VB-Audio credit in the bottom-right corner.
 
-To set the image shown when the repository link is shared:
+[View and download all four variants](ARTWORK.md).
+
+The README uses [images/social-preview.jpg](images/social-preview.jpg):
+**1774 × 887 pixels, 220,905 bytes**. The JPEG retains the original dimensions
+and is below 1 MB. Original PNGs and matching portrait JPEGs are in `docs/images`.
+
+To change the image shown when the GitHub repository link is shared:
 
 1. Open the repository's **Settings** tab.
 2. Under **Social preview**, choose **Edit → Upload an image**.
-3. Select `social-preview.jpg`.
+3. Select `social-preview.jpg` or `social-preview-untagged.jpg`.
 
 This setting is separate from the README image. Sites such as Discord may cache
 an older preview for a while after it changes.
 
 [GitHub social-preview documentation](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview)
 
-Generation prompt (the tool returned the same 2:1 composition at 1774 × 887):
-
-> Create a finished GitHub repository social-preview banner, exactly 1280 by 640 pixels, wide landscape 2:1. Solid very dark navy-charcoal background. Brand: OBS VBAN Audio, independent Windows audio-network plugin. On the left quarter, a crisp original cyan audio waveform between two small amber-dot network endpoint nodes, encircled by two cyan return arrows. Elegant modern audio-software icon, subtle dimensional polish and very restrained glow. On the right, large bold clean white sans-serif title on two lines reading exactly 'OBS VBAN' then 'AUDIO'. Under it, a clear smaller cyan subtitle reading exactly '8 inputs · 2 monitor returns'. Small bottom line reading exactly 'Windows x64  |  OBS Studio'. Generous 70 pixel safe margins, balanced breathing room, readable in a Discord link-preview card. Subtle cyan network line accents at the edges, otherwise clean background. No real OBS swirl logo, no other brands, no additional text, no watermark. This is a social preview graphic, not a screenshot or website mockup.
-
-The generated PNG was encoded as JPEG at quality 92 to meet GitHub's upload size
-limit. The original composition was preserved.
-
-### ElkaSoft attribution
-
-The README and social-preview banner include **by ElkaSoft** beneath the platform
-line. The approved image was edited with the built-in imagegen tool. The plugin
-and installer icons use the original icon artwork above.
-
-Edit prompt:
-
-> Preserve the existing 2:1 wide composition, dark navy background, cyan waveform and return-arrow logo, orange nodes, circuit details, all existing text and placement. Add exactly "by ElkaSoft" in the empty bottom area below the Windows/OBS line, aligned with the right-hand text block with comfortable bottom padding. Use a refined, readable, slightly italic contemporary font, approximately the height of the inputs/returns subtitle or slightly smaller. Use warm amber-orange for "Elka", cyan-blue for "Soft", and smaller muted grey "by". Capital E and S, with no space within ElkaSoft. No new icon, crop or redesign.
-
-The approved PNG was compressed to JPEG at quality 92 without resizing:
-**1774 × 887 pixels, 175,489 bytes**, below GitHub's 1 MB social-preview limit.
-Use the same `docs/images/social-preview.jpg` file for the manual social-preview
-upload in repository Settings.
+The banners were edited with the built-in imagegen tool. The final
+[editing prompts](ARTWORK-PROMPTS.md) record the foreground, typography and
+straight-line constraints. JPEG exports use quality 92 with no resizing.
