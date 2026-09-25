@@ -1,6 +1,8 @@
 param(
     [string]$InnoCompiler = '',
-    [ValidateSet('RelWithDebInfo','Release')][string]$Configuration = 'RelWithDebInfo'
+    [ValidateSet('RelWithDebInfo','Release')][string]$Configuration = 'RelWithDebInfo',
+    [string]$ExpectedDllPath = '',
+    [string]$OutputDirectory = ''
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
@@ -8,6 +10,7 @@ if (-not $InnoCompiler) { $InnoCompiler = Join-Path ([Environment]::GetFolderPat
 $version = (Get-Content -LiteralPath (Join-Path $repoRoot 'buildspec.json') -Raw | ConvertFrom-Json).version
 $releaseZip = Join-Path $repoRoot "dist\vban-stream-$version-obs-root.zip"
 $builtDll = Join-Path $repoRoot "build_x64\$Configuration\obs-vban-audio.dll"
+if ($ExpectedDllPath) { $builtDll = [IO.Path]::GetFullPath($ExpectedDllPath) }
 if (-not (Test-Path -LiteralPath $InnoCompiler)) { throw 'Install Inno Setup 6, or specify -InnoCompiler.' }
 if (-not (Test-Path -LiteralPath $releaseZip)) { throw 'Run tools/build.ps1 -Package with Visual Studio 2026 first.' }
 if (-not (Test-Path -LiteralPath $builtDll)) { throw 'The matching Visual Studio plugin build is required.' }
@@ -31,11 +34,12 @@ try {
 $payloadDll = Join-Path $stage 'obs-plugins\64bit\obs-vban-audio.dll'
 $payloadHash = (Get-FileHash -LiteralPath $payloadDll -Algorithm SHA256).Hash
 if ($payloadHash -ne (Get-FileHash -LiteralPath $builtDll -Algorithm SHA256).Hash) {
-    throw 'The release ZIP DLL does not match the Visual Studio build. Do not publish mixed binaries.'
+    throw 'The release ZIP DLL does not match the reference DLL. Do not publish mixed binaries.'
 }
 & (Join-Path $PSScriptRoot 'create-installer-icon.ps1')
 $script = Join-Path $repoRoot 'installer\obs-vban-audio.iss'
 $output = Join-Path $repoRoot 'dist'
+if ($OutputDirectory) { $output = [IO.Path]::GetFullPath($OutputDirectory) }
 & $InnoCompiler "/DAppVersion=$version" "/DPayloadDir=$stage" "/DOutputPath=$output" $script
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
 $setup = Join-Path $output "vban-stream-$version-windows-x64-setup.exe"

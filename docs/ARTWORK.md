@@ -11,7 +11,7 @@ the compatibility line **Windows x64 | OBS Studio**. The main product title is
 
 ## Downloads
 
-[Download the complete PNG + JPEG ZIP](https://github.com/torment78/obs-vban-audio/releases/download/v0.2.4/VBAN-Stream-artwork.zip).
+[Download the complete PNG + JPEG ZIP](https://github.com/torment78/vban-stream/releases/download/v0.2.5/VBAN-Stream-artwork.zip).
 
 Every JPEG is **under 1 MB**, exported at quality 92 without resizing.
 PNG originals are also provided.

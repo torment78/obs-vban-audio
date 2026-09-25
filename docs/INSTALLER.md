@@ -1,6 +1,6 @@
 # Windows installer
 
-The EXE is an additional package for the existing 0.2.4 release. It contains the
+The EXE is the dark installer package for the 0.2.5 pre-release. It contains the
 same tested plugin DLL as the ZIP downloads.
 
 ## Build
@@ -12,7 +12,7 @@ Build the plugin and ZIPs with Visual Studio 2026 first:
 .\tools\package-installer.ps1
 ```
 
-The second command uses locally installed Inno Setup 6 (validated with 6.6.1).
+The second command uses locally installed Inno Setup 6.6 or newer (validated with 6.6.1).
 It extracts an explicit list of payload files from the root ZIP and checks the
 DLL SHA256 against the Visual Studio build before compiling the installer.
 Use `-InnoCompiler` for a non-default compiler path.
@@ -21,7 +21,34 @@ Packaging also converts the existing plugin PNG into a multi-resolution Windows
 ICO and embeds it in Setup/Uninstall. The Installed apps entry uses the uninstaller's
 matching icon. All seven ICO frame payloads were verified in the compiled setup EXE.
 
-Output: `dist\vban-stream-0.2.4-windows-x64-setup.exe`.
+Output: `dist\vban-stream-0.2.5-windows-x64-setup.exe`.
+
+## Appearance
+
+Setup and Uninstall use the same `modern dark polar includetitlebar` theme as
+VBAN Plug, with a 120% wizard size. The welcome and finish pages use VBAN Stream's
+existing circuit portrait, fitted without cropping or changing its aspect ratio.
+The original plugin icon appears in the header and executable, and the shared
+ElkaSoft logo appears on the welcome and finish pages. A Donate button opens
+https://ko-fi.com/msffixit as the original Windows user.
+
+The standard/portable choices, folder browser, validation, payload paths and
+settings-preservation behavior are unchanged.
+
+For an installer-only preview using a previously validated release DLL, both
+packaging and tests accept `-ExpectedDllPath`. Verify that DLL against the
+published release checksum before using it. Packaging still checks the root ZIP
+against that reference, instead of implicitly including the current development
+build. Use `-OutputDirectory` to keep preview installers separate from release
+assets. Defaults still compare against the Visual Studio build and output to `dist`.
+
+The 25 September 2026 dark preview is in `dist/installer-dark-preview` and uses
+the original published 0.2.4 payload. It passed all 53 installer checks; logs are
+under `build_installer/test-d82dac9bae8940bda1a8a4ba2ff4fcd1` and
+`build_installer/dark-preview-tests.log`. Desktop visual inspection could not run:
+the Computer Use runtime failed to initialize with `apply deny-read ACLs` on both
+attempts. Visible layout, high-DPI appearance and interactive browsing remain
+unverified. No GitHub release asset was replaced.
 
 ## Installation behavior
 
@@ -66,7 +93,7 @@ destinations under `build_installer`. It does not start OBS. It refuses to run
 over an existing current-user uninstall registration and removes the temporary
 registration through the uninstaller.
 
-53 checks passed for the final 0.2.4 installer:
+53 checks passed for the final 0.2.5 installer:
 
 - Both standard and portable installation, matching DLL hash and required files.
 - Repeated installation/update without duplicate uninstallers.
@@ -77,8 +104,11 @@ registration through the uninstaller.
 - An uninstaller copied with a moved OBS folder refuses the old paths.
 - Reinstall/uninstall in the moved folder leaves the original OBS copy intact.
 
+Final 0.2.5 logs are in `build_logs/0.2.5` and
+`build_installer/test-fc55731231cd4b67a3834d90431c7036`.
+
 The tested DLL SHA256 is
-`8404B20BCD651DB7D38A7F378F5FEA8BC2C56595D3897DABD2555F2B80DF4DAB`.
+`13E2038DA48C07D7EE71B4415778B6B41B44259DEC014A219876E25899DA655E`.
 
 The administrator consent dialog and writes to protected Program Files folders
 are not exercised by these non-elevated tests. Desktop UI inspection was

@@ -8,15 +8,19 @@
 #ifndef OutputPath
   #error OutputPath must be supplied by tools/package-installer.ps1
 #endif
+#if Ver < EncodeVer(6, 6, 0)
+  #error Inno Setup 6.6 or later is required for the dark installer
+#endif
+#define DonateURL "https://ko-fi.com/msffixit"
 
 [Setup]
 AppId={{CBB7B1A9-2B1D-4AA5-8494-82CBA4EA194C}
 AppName=VBAN Stream
 AppVersion={#AppVersion}
-AppPublisher=VBAN Stream contributors
-AppPublisherURL=https://github.com/torment78/obs-vban-audio
-AppSupportURL=https://github.com/torment78/obs-vban-audio/issues
-AppUpdatesURL=https://github.com/torment78/obs-vban-audio/releases
+AppPublisher=ElkaSoft
+AppPublisherURL=https://github.com/torment78/vban-stream
+AppSupportURL=https://github.com/torment78/vban-stream/issues
+AppUpdatesURL=https://github.com/torment78/vban-stream/releases
 DefaultDirName={autopf}\obs-studio
 UsePreviousAppDir=no
 DisableDirPage=yes
@@ -29,8 +33,10 @@ OutputBaseFilename=vban-stream-{#AppVersion}-windows-x64-setup
 Compression=lzma2
 SolidCompression=yes
 SetupIconFile=vban-audio.ico
-WizardStyle=modern
-WizardSizePercent=110
+WizardStyle=modern dark polar includetitlebar
+WizardSizePercent=120,120
+WizardImageFile=..\docs\images\vertical-untagged.png
+WizardSmallImageFile=..\data\vban-audio.png
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
@@ -60,6 +66,7 @@ Source: "{#PayloadDir}\data\obs-plugins\obs-vban-audio\locale\en-US.ini"; DestDi
 Source: "{#PayloadDir}\data\obs-plugins\obs-vban-audio\vban-audio.png"; DestDir: "{app}\data\obs-plugins\obs-vban-audio"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}\data\obs-plugins\obs-vban-audio"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "..\docs\INSTALL-OBS-ROOT.txt"; DestDir: "{app}\data\obs-plugins\obs-vban-audio"; DestName: "VBAN-INSTALL.txt"; Flags: ignoreversion
+Source: "assets\ElkaSoft.png"; Flags: dontcopy
 
 [Code]
 var
@@ -70,6 +77,8 @@ var
   FolderLabel, FolderHelp, StandardHelp, PortableHelp: TNewStaticText;
   StandardRoot, PortableRoot: String;
   ShowingPortable: Boolean;
+  DonateButton: TNewButton;
+  WelcomeLogo, FinishedLogo: TBitmapImage;
 
 function GetBinaryType(FileName: String; var BinaryType: Cardinal): Boolean;
   external 'GetBinaryTypeW@kernel32.dll stdcall';
@@ -167,10 +176,76 @@ begin
       mbError, MB_OK, IDOK);
 end;
 
+procedure DonateClick(Sender: TObject);
+var
+  ErrorCode: Integer;
+begin
+  if not ShellExecAsOriginalUser('open', '{#DonateURL}', '', '',
+      SW_SHOWNORMAL, ewNoWait, ErrorCode) then
+    MsgBox('Open {#DonateURL} in your browser to support ElkaSoft.', mbInformation, MB_OK);
+end;
+
+procedure FitWizardArtwork(Image: TBitmapImage);
+var
+  ArtworkHeight: Integer;
+begin
+  { Fit the existing 941 x 1672 portrait without cropping or stretching its artwork. }
+  ArtworkHeight := (Image.Width * 1672) div 941;
+  Image.Top := Image.Top + (Image.Height - ArtworkHeight) div 2;
+  Image.Height := ArtworkHeight;
+end;
+
+procedure AddBrandLogo(var Logo: TBitmapImage; ParentPage: TNewNotebookPage; LeftEdge: Integer);
+begin
+  Logo := TBitmapImage.Create(WizardForm);
+  Logo.Parent := ParentPage;
+  Logo.SetBounds(LeftEdge, ParentPage.Height - ScaleY(120), ScaleX(108), ScaleY(108));
+  Logo.Stretch := True;
+  Logo.PngImage.LoadFromFile(ExpandConstant('{tmp}\ElkaSoft.png'));
+end;
+
+procedure ApplyBranding;
+begin
+  ExtractTemporaryFile('ElkaSoft.png');
+  FitWizardArtwork(WizardForm.WizardBitmapImage);
+  FitWizardArtwork(WizardForm.WizardBitmapImage2);
+  WizardForm.WelcomeLabel1.Caption := 'VBAN Stream';
+  WizardForm.WelcomeLabel2.Caption :=
+    'Network audio for OBS Studio.' + #13#10#13#10 +
+    'Eight VBAN inputs with up to eight channels per stream.' + #13#10 +
+    'Two stereo monitor returns for your other computers.' + #13#10#13#10 +
+    'Version {#AppVersion}  /  Windows x64  /  OBS Studio' + #13#10#13#10 +
+    'Choose standard or portable OBS on the next setup pages.' + #13#10 +
+    'Close OBS before continuing.';
+  WizardForm.WelcomeLabel2.Height := ScaleY(180);
+  AddBrandLogo(WelcomeLogo, WizardForm.WelcomePage, WizardForm.WelcomeLabel2.Left);
+  AddBrandLogo(FinishedLogo, WizardForm.FinishedPage, WizardForm.FinishedLabel.Left);
+  DonateButton := TNewButton.Create(WizardForm);
+  DonateButton.Parent := WizardForm;
+  DonateButton.Caption := 'Donate';
+  DonateButton.SetBounds(ScaleX(16), WizardForm.NextButton.Top, ScaleX(90), WizardForm.NextButton.Height);
+  DonateButton.Anchors := [akLeft, akBottom];
+  DonateButton.OnClick := @DonateClick;
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if CurPageID = wpFinished then begin
+    WizardForm.FinishedHeadingLabel.Caption := 'VBAN Stream is ready';
+    WizardForm.FinishedLabel.Caption :=
+      'VBAN Stream is installed in:' + #13#10#13#10 +
+      WizardDirValue + #13#10#13#10 +
+      'Open OBS, then choose Tools > VBAN Stream Settings.' + #13#10 +
+      'Your scenes, profiles and audio settings are kept.';
+    WizardForm.FinishedLabel.Height := ScaleY(150);
+  end;
+end;
+
 procedure InitializeWizard;
 var
   InitialRoot: String;
 begin
+  ApplyBranding;
   StandardRoot := DetectOBSRoot;
   PortableRoot := '';
   InitialRoot := ExpandConstant('{param:OBSROOT|}');

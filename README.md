@@ -11,11 +11,11 @@ An independent plugin by **ElkaSoft** for OBS Studio.
 Receive named VBAN streams with 1–8 channels each directly in OBS. Send the OBS monitoring mix back to
 two computers, each with its own destination address, UDP port, and stream name.
 
-[**Download the latest stable release**](https://github.com/torment78/obs-vban-audio/releases/latest)
- · [Try the 0.2.4 pre-release](https://github.com/torment78/obs-vban-audio/releases/tag/v0.2.4)
- · [Download all banners](https://github.com/torment78/obs-vban-audio/releases/download/v0.2.4/VBAN-Stream-artwork.zip)
+[**Download the latest stable release**](https://github.com/torment78/vban-stream/releases/latest)
+ · [Try the 0.2.5 pre-release](https://github.com/torment78/vban-stream/releases/tag/v0.2.5)
+ · [Download all banners](https://github.com/torment78/vban-stream/releases/download/v0.2.5/VBAN-Stream-artwork.zip)
  · [Installation guide](docs/INSTALL-OBS-ROOT.txt)
- · [Report an issue](https://github.com/torment78/obs-vban-audio/issues)
+ · [Report an issue](https://github.com/torment78/vban-stream/issues)
 
 [![Donate on Ko-fi](https://img.shields.io/badge/Donate-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/msffixit)
 
@@ -25,17 +25,17 @@ Free and open source under GPL-2.0-or-later. Donations support development and a
 
 ## Download and install
 
-The files below are the **0.2.4 pre-release**. The latest stable version is **0.2.2** and retains the earlier VBAN Audio name. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
+The files below are the **0.2.5 pre-release**. The latest stable version is **0.2.2** and retains the earlier VBAN Audio name. Tested with **OBS 31.1.1** and **OBS 32.2.1** on Windows x64.
 
 | Download | Where it goes |
 | --- | --- |
-| **vban-stream-0.2.4-windows-x64-setup.exe** | Guided installer for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
-| **vban-stream-0.2.4-obs-root.zip** | Merge its **obs-plugins** and **data** folders into the OBS installation folder. Works with **normal and portable OBS**. |
-| **vban-stream-0.2.4-windows-x64.zip** | Copy its **obs-vban-audio** folder into **C:\ProgramData\obs-studio\plugins** for a normal OBS installation. |
+| **vban-stream-0.2.5-windows-x64-setup.exe** | Dark installer with VBAN Stream artwork for **standard or portable OBS**. Finds installed OBS or lets you browse to its root folder. |
+| **vban-stream-0.2.5-obs-root.zip** | Merge its **obs-plugins** and **data** folders into the OBS installation folder. Works with **normal and portable OBS**. |
+| **vban-stream-0.2.5-windows-x64.zip** | Copy its **obs-vban-audio** folder into **C:\ProgramData\obs-studio\plugins** for a normal OBS installation. |
 
 ### Using the installer
 
-1. Close OBS, run **vban-stream-0.2.4-windows-x64-setup.exe**, and approve the Windows administrator prompt.
+1. Close OBS, run **vban-stream-0.2.5-windows-x64-setup.exe**, and approve the Windows administrator prompt.
 2. Choose **Standard OBS installation** (selected by default) or **Portable OBS**.
 3. Check the detected standard OBS folder, or click **Browse** to choose your portable
    OBS root: the folder containing **bin**, **data**, and **obs-plugins**.
@@ -189,7 +189,7 @@ No .NET/C# project or separate Qt installation is needed.
 To build the current pre-release, clone the dev branch into a working folder, then run PowerShell there:
 
 ```powershell
-git clone --branch dev https://github.com/torment78/obs-vban-audio.git
+git clone --branch dev https://github.com/torment78/vban-stream.git
 cd obs-vban-audio
 .\tools\build.ps1 -Package
 ```
@@ -230,7 +230,7 @@ GitHub workflows are disabled until adapted and validated for this toolchain.
 
 ## Support and credits
 
-Use [GitHub Issues](https://github.com/torment78/obs-vban-audio/issues) for bug reports.
+Use [GitHub Issues](https://github.com/torment78/vban-stream/issues) for bug reports.
 Include OBS/plugin versions, sample rate, return buffer, and which counters increase.
 Remove private addresses or other personal information from logs before posting.
 

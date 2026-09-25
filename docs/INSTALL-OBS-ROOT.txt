@@ -1,9 +1,9 @@
-VBAN Stream 0.2.4 - Installation and usage
+VBAN Stream 0.2.5 - Installation and usage
 
 INSTALLER (STANDARD OR PORTABLE OBS)
 
 1. Close all OBS Studio windows.
-2. Run vban-stream-0.2.4-windows-x64-setup.exe.
+2. Run vban-stream-0.2.5-windows-x64-setup.exe.
    Approve the Windows administrator prompt. Protected folders such as
    Program Files need administrator access.
 3. Select one option:
@@ -35,10 +35,10 @@ The plugin works with normal and portable OBS Studio on Windows x64.
 Both ZIP files contain the same plugin DLL, arranged for different install paths.
 Install only one copy.
 
-- vban-stream-0.2.4-obs-root.zip:
+- vban-stream-0.2.5-obs-root.zip:
   Merge into the OBS installation folder. Works with normal AND portable OBS.
 
-- vban-stream-0.2.4-windows-x64.zip:
+- vban-stream-0.2.5-windows-x64.zip:
   Copy the obs-vban-audio folder into C:\ProgramData\obs-studio\plugins
   for a normal OBS installation.
 
@@ -134,6 +134,13 @@ Configure a sender/stream-name pair only once in the global slots.
 Other enabled slots need different sender/name combinations.
 
 RECEIVE STATUS
+
+The Channels box shows the actual incoming channel count (1 to 8) for each
+receiving stream. Input format shows its PCM bit depth or floating-point format.
+These describe the incoming stream before OBS downmixing. Waiting, disabled,
+error or timed-out streams show a dash instead of stale values.
+Receiving: N / 8 streams counts live configured streams, not audio channels or
+multiple OBS source copies of the same stream.
 
 Receiving: matching valid packets arrived recently.
 Waiting: no recent matching valid packets.
@@ -239,10 +246,10 @@ Source stream selections are saved by OBS with the scene collection.
 SUPPORT AND OPTIONAL DONATIONS
 
 Project and downloads:
-https://github.com/torment78/obs-vban-audio
+https://github.com/torment78/vban-stream
 
 Bug reports:
-https://github.com/torment78/obs-vban-audio/issues
+https://github.com/torment78/vban-stream/issues
 
 Donate on Ko-fi:
 https://ko-fi.com/msffixit
